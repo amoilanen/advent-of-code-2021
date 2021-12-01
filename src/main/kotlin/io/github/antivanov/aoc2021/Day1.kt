@@ -13,17 +13,32 @@ val input = """
 263
 """.trimIndent()
 
+val originalMeasurements: List<Int> = input.split("\n").map { it.toInt() }
+
 object Day1 {
+
+  fun slidingWindowSamples(measurements: List<Int>, slidingWindowSize: Int): List<List<Int>> {
+    val slidingWindowStartIndexes = 0..(measurements.size - slidingWindowSize)
+    return slidingWindowStartIndexes.map {
+      measurements.subList(it, it + slidingWindowSize)
+    }
+  }
+
   fun countIncreases(measurements: List<Int>): Int {
     return measurements.zipWithNext().filter({it.first < it.second}).count()
   }
 
-  fun part1(input: String): Int {
-    val measurements: List<Int> = input.split("\n").map { it.toInt() }
+  fun part1(measurements: List<Int>): Int {
     return countIncreases(measurements)
+  }
+
+  fun part2(measurements: List<Int>): Int {
+    val slidingWindowSums = slidingWindowSamples(measurements, 3).map { it.sum() }
+    return countIncreases(slidingWindowSums)
   }
 }
 
 fun main() {
-  println(Day1.part1(input))
+  println(Day1.part1(originalMeasurements))
+  println(Day1.part2(originalMeasurements))
 }
