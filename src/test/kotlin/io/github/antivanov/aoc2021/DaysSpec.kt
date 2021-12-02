@@ -42,4 +42,9 @@ class DaysSpec {
   fun test_day2_part1() {
     assertEquals(150, Day2.part1(day2TestInput))
   }
+
+  @Test
+  fun test_day2_part2() {
+    assertEquals(900, Day2.part2(day2TestInput))
+  }
 }
