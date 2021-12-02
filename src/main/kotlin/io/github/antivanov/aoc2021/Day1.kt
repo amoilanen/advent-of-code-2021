@@ -1,6 +1,8 @@
 package io.github.antivanov.aoc2021
 
-val input = """
+object Day1 {
+
+  val input = """
 199
 200
 208
@@ -13,9 +15,7 @@ val input = """
 263
 """.trimIndent()
 
-val originalMeasurements: List<Int> = input.split("\n").map { it.toInt() }
-
-object Day1 {
+  val originalMeasurements: List<Int> = input.split("\n").map { it.toInt() }
 
   fun slidingWindowSamples(measurements: List<Int>, slidingWindowSize: Int): List<List<Int>> {
     val slidingWindowStartIndexes = 0..(measurements.size - slidingWindowSize)
@@ -39,6 +39,6 @@ object Day1 {
 }
 
 fun main() {
-  println(Day1.part1(originalMeasurements))
-  println(Day1.part2(originalMeasurements))
+  println(Day1.part1(Day1.originalMeasurements))
+  println(Day1.part2(Day1.originalMeasurements))
 }
