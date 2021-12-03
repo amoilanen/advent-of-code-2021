@@ -47,4 +47,24 @@ class DaysSpec {
   fun test_day2_part2() {
     assertEquals(900, Day2.part2(day2TestInput))
   }
+
+  val day3TestInput = """
+    00100
+    11110
+    10110
+    10111
+    10101
+    01111
+    00111
+    11100
+    10000
+    11001
+    00010
+    01010
+  """.trimIndent().split("\n")
+
+  @Test
+  fun test_day3_part1() {
+    assertEquals(198, Day3.part1(day3TestInput))
+  }
 }
