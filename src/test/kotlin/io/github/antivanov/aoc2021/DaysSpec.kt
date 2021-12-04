@@ -48,7 +48,7 @@ class DaysSpec {
     assertEquals(900, Day2.part2(day2TestInput))
   }
 
-  val day3TestInput = """
+  val day3TestInput: List<List<Int>> = """
     00100
     11110
     10110
@@ -61,10 +61,15 @@ class DaysSpec {
     11001
     00010
     01010
-  """.trimIndent().split("\n")
+  """.trimIndent().split("\n").map { it.toCharArray().toList().map { it.toString().toInt() } }
 
   @Test
   fun test_day3_part1() {
     assertEquals(198, Day3.part1(day3TestInput))
+  }
+
+  @Test
+  fun test_day3_part2() {
+    assertEquals(230, Day3.part2(day3TestInput))
   }
 }
