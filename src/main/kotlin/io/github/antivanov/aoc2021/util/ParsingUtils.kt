@@ -3,7 +3,6 @@ package io.github.antivanov.aoc2021.util
 import arrow.core.None
 import arrow.core.Some
 import arrow.core.flattenOption
-import java.util.*
 
 object ParsingUtils {
 
@@ -16,7 +15,12 @@ object ParsingUtils {
     }.flattenOption()
     val splitIndices = listOf(0) + elementPositions + listOf(list.size)
     return splitIndices.zipWithNext().map { (left, right) ->
-      list.subList(left, right).filter { it != e }
+      val from = if (list[left] == e && right > left)
+        left + 1
+      else
+        left
+      val to = right
+      list.subList(from, to)
     }
   }
 }
