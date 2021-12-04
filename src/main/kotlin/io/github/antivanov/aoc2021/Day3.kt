@@ -16,7 +16,10 @@ object Day3 {
 01010
 """.trimIndent()
 
-  private fun computeBitFrequencies(measurements: List<List<Int>>): List<Int> {
+  private fun toDecimalFromBits(bits: List<Int>): Int =
+    bits.joinToString(separator = "").toInt(2)
+
+  private fun computeOneBitFrequencies(measurements: List<List<Int>>): List<Int> {
     val measurementWidth = measurements[0].size
     return (0 until measurementWidth).map { bitIndex ->
       measurements.fold(0) { current, measurement ->
@@ -25,33 +28,29 @@ object Day3 {
     }
   }
 
-  private fun frequenciesToMeasurement(bitFrequencies: List<Int>, bitTriggerLimit: Int, triggerLimitComparison: (Int, Int) -> Boolean): Int {
-    val gammaBits = bitFrequencies.map {
-      if (triggerLimitComparison(it, bitTriggerLimit))
-        1
-      else
-        0
+  private fun frequenciesToMeasurement(oneBitFrequencies: List<Int>, measurementsSize: Int, bitSetter: (Int, Int) -> Int): Int {
+    val gammaBits = oneBitFrequencies.map {
+      bitSetter(it, measurementsSize - it)
     }
-    return gammaBits.joinToString(separator = "").toInt(2)
+    return toDecimalFromBits(gammaBits)
   }
 
-  private fun computeGamma(bitFrequencies: List<Int>, bitTriggerLimit: Int): Int {
-    return frequenciesToMeasurement(bitFrequencies, bitTriggerLimit) { frequency, limit ->
-      frequency > limit
+  private fun computeGamma(oneBitFrequencies: List<Int>, measurementsSize: Int): Int {
+    return frequenciesToMeasurement(oneBitFrequencies, measurementsSize) { onesCount, zerosCount ->
+      if (onesCount > zerosCount) 1 else 0
     }
   }
 
-  private fun computeEpsilon(bitFrequencies: List<Int>, bitTriggerLimit: Int): Int {
-    return frequenciesToMeasurement(bitFrequencies, bitTriggerLimit) { frequency, limit ->
-      frequency <= limit // 0-biased selection, should be 1-biased instead for the "oxygen generator rating" - !
+  private fun computeEpsilon(oneBitFrequencies: List<Int>, measurementsSize: Int): Int {
+    return frequenciesToMeasurement(oneBitFrequencies, measurementsSize) { onesCount, zerosCount ->
+      if (onesCount <= zerosCount) 1 else 0 // 0-biased selection, should be 1-biased instead for the "oxygen generator rating" - !
     }
   }
 
   fun part1(measurements: List<List<Int>>): Int {
-    val frequencies = computeBitFrequencies(measurements)
-    val bitTriggerLimit = measurements.size / 2
-    val gamma = computeGamma(frequencies, bitTriggerLimit)
-    val epsilon = computeEpsilon(frequencies, bitTriggerLimit)
+    val oneBitFrequencies = computeOneBitFrequencies(measurements)
+    val gamma = computeGamma(oneBitFrequencies, measurements.size)
+    val epsilon = computeEpsilon(oneBitFrequencies, measurements.size)
     return gamma * epsilon
   }
 
@@ -77,7 +76,7 @@ object Day3 {
       return computeRating(filteredMeasurements, currentBitIndex + 1, bitChooser)
     } else {
       val foundMeasurement = filteredMeasurements[0]
-      return foundMeasurement.joinToString(separator = "").toInt(2)
+      return toDecimalFromBits(foundMeasurement)
     }
   }
 
