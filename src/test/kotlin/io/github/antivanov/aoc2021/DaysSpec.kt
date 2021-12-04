@@ -102,4 +102,10 @@ class DaysSpec {
     val (drawnNumbers, boards) = day4TestInput
     assertEquals(Some(4512), Day4.part1(drawnNumbers, boards))
   }
+
+  @Test
+  fun test_day4_part2() {
+    val (drawnNumbers, boards) = day4TestInput
+    assertEquals(Some(1924), Day4.part2(drawnNumbers, boards))
+  }
 }

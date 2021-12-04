@@ -98,9 +98,39 @@ object Day4 {
       }
     }
   }
+
+  private fun lastWinningBoard(numbersToDraw: List<Int>, boards: List<Board>): Option<Pair<List<Int>, Board>> {
+    fun findLoosingBoard(numbersToDraw: List<Int>, boards: List<Board>, alreadyDrawnNumbersCount: Int): Option<Pair<Int, Board>> {
+      val drawnNumbers = numbersToDraw.subList(0, alreadyDrawnNumbersCount)
+      val loosingBoard = boards.find { board ->
+        board.rowsAndColumns().all { matchableNumbers ->
+          !drawnNumbers.containsAll(matchableNumbers.numbers)
+        }
+      }.toOption()
+      return if (loosingBoard.isDefined()) {
+        loosingBoard.map { alreadyDrawnNumbersCount to it }
+      } else if (alreadyDrawnNumbersCount == 1) {
+        return None
+      } else {
+        findLoosingBoard(numbersToDraw, boards, alreadyDrawnNumbersCount - 1)
+      }
+    }
+    return findLoosingBoard(numbersToDraw, boards, numbersToDraw.size).map { (drawnNumberCount, loosingBoard) ->
+      val numbersToDrawForLastWinningBoard = numbersToDraw.subList(0, drawnNumberCount + 1)
+      numbersToDrawForLastWinningBoard to loosingBoard
+    }
+  }
+
+  fun part2(drawnNumbers: List<Int>, boards: List<Board>): Option<Int> {
+    val lastWinningBoard = lastWinningBoard(drawnNumbers, boards)
+    return lastWinningBoard.map { (numbersDrawnToWin, board) ->
+      winningBoardScore(numbersDrawnToWin, board)
+    }
+  }
 }
 
 fun main() {
   val (drawnNumbers, boards) = Day4.parseInput(Day4.input.split("\n").map { it.trimIndent() })
   println(Day4.part1(drawnNumbers, boards))
+  println(Day4.part2(drawnNumbers, boards))
 }
