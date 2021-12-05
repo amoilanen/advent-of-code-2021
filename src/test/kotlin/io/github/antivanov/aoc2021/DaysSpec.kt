@@ -108,4 +108,22 @@ class DaysSpec {
     val (drawnNumbers, boards) = day4TestInput
     assertEquals(Some(1924), Day4.part2(drawnNumbers, boards))
   }
+
+  val day5TestInput = Day5.parseInput("""
+    0,9 -> 5,9
+    8,0 -> 0,8
+    9,4 -> 3,4
+    2,2 -> 2,1
+    7,0 -> 7,4
+    6,4 -> 2,0
+    0,9 -> 2,9
+    3,4 -> 1,4
+    0,0 -> 8,8
+    5,5 -> 8,2
+  """.trimIndent().split("\n"))
+
+  @Test
+  fun test_day5_part1() {
+    assertEquals(5, Day5.part1(day5TestInput))
+  }
 }
