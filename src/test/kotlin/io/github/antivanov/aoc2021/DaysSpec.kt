@@ -126,4 +126,9 @@ class DaysSpec {
   fun test_day5_part1() {
     assertEquals(5, Day5.part1(day5TestInput))
   }
+
+  @Test
+  fun test_day5_part2() {
+    assertEquals(12, Day5.part2(day5TestInput))
+  }
 }
