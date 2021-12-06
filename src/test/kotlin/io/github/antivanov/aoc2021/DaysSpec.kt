@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 
 class DaysSpec {
 
-  val day1TestInput = Arrays.asList(
+  val day1TestInput = listOf(
     199,
     200,
     208,
@@ -30,7 +30,7 @@ class DaysSpec {
     assertEquals(5, Day1.part2(day1TestInput))
   }
 
-  val day2TestInput = Arrays.asList(
+  val day2TestInput = listOf(
     Day2.MovementInstruction.Forward(5),
     Day2.MovementInstruction.Down(5),
     Day2.MovementInstruction.Forward(8),
@@ -130,5 +130,12 @@ class DaysSpec {
   @Test
   fun test_day5_part2() {
     assertEquals(12, Day5.part2(day5TestInput))
+  }
+
+  val day6TestInput = listOf(3, 4, 3, 1, 2)
+
+  @Test
+  fun test_day6_part1() {
+    assertEquals(5934, Day6.part1(day6TestInput, 80))
   }
 }

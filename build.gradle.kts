@@ -19,6 +19,8 @@ dependencies {
 
   implementation("io.arrow-kt:arrow-core:1.0.1")
 
+  implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.5.2")
+
   testImplementation("org.jetbrains.kotlin:kotlin-test")
 
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
