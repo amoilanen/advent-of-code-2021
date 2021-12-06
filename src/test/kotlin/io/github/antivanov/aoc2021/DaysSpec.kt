@@ -1,7 +1,6 @@
 package io.github.antivanov.aoc2021
 
 import arrow.core.Some
-import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -136,6 +135,11 @@ class DaysSpec {
 
   @Test
   fun test_day6_part1() {
-    assertEquals(5934, Day6.part1(day6TestInput, 80))
+    assertEquals(5934, Day6.part1(day6TestInput))
+  }
+
+  @Test
+  fun test_day6_part2() {
+    assertEquals(26984457539, Day6.part2(day6TestInput))
   }
 }
