@@ -142,4 +142,11 @@ class DaysSpec {
   fun test_day6_part2() {
     assertEquals(26984457539, Day6.part2(day6TestInput))
   }
+
+  val day7TestInput = Day7.parseInput("16,1,2,0,4,2,7,1,2,14")
+
+  @Test
+  fun test_day7_part1() {
+    assertEquals(37, Day7.part1(day7TestInput))
+  }
 }
