@@ -83,21 +83,12 @@ object Day8 {
 
   fun part1(displayInputs: List<Pair<List<String>, List<String>>>): Int {
     val displayedDigits = displayInputs.flatMap { decipherDisplayReading(it) }
-    println(displayedDigits)
     val digitCounts = displayedDigits.groupBy { it }.mapValues { it.value.size }
-    println(digitCounts)
     return digitCounts[1]!! + digitCounts[4]!! + digitCounts[7]!! + digitCounts[8]!!
   }
 }
 
 fun main() {
   val displayInputs = Day8.parseInput(Day8.input)
-  println(displayInputs)
-
-  //val displayInput = "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe"
-  val displayInput = "edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc"
-  val parsedInput = Day8.parseDisplayInput(displayInput)
-  println(parsedInput)
-  println(Day8.decipherDisplayReading(parsedInput))
   println(Day8.part1(displayInputs))
 }
