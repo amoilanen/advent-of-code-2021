@@ -172,4 +172,9 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
   fun test_day8_part1() {
     assertEquals(26, Day8.part1(day8TestInput))
   }
+
+  @Test
+  fun test_day8_part2() {
+    assertEquals(61229, Day8.part2(day8TestInput))
+  }
 }

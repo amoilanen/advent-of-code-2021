@@ -86,9 +86,15 @@ object Day8 {
     val digitCounts = displayedDigits.groupBy { it }.mapValues { it.value.size }
     return digitCounts[1]!! + digitCounts[4]!! + digitCounts[7]!! + digitCounts[8]!!
   }
+
+  fun part2(displayInputs: List<Pair<List<String>, List<String>>>): Int {
+    val displayedNumbers = displayInputs.map { decipherDisplayReading(it).map { it.toString() }.joinToString("").toInt() }
+    return displayedNumbers.sum()
+  }
 }
 
 fun main() {
   val displayInputs = Day8.parseInput(Day8.input)
   println(Day8.part1(displayInputs))
+  println(Day8.part2(displayInputs))
 }
