@@ -26,8 +26,8 @@ object Day9 {
   data class Point(val x: Int, val y: Int)
 
   data class Locations(val points: List<List<Int>>) {
-    private val width = points[0].size
-    private val height = points.size
+    val width = points[0].size
+    val height = points.size
 
     fun getHeightAt(p: Point): Int =
       points[p.y][p.x]
@@ -70,9 +70,55 @@ object Day9 {
       it + 1
     }.sum()
   }
+
+  fun basinPointsOnLinesFrom(locations: Locations, p: Point): Set<Point> {
+    val basinPointToLeft = (0..p.x).map {
+      Point(it, p.y)
+    }.reversed().takeWhile {
+      locations.getHeightAt(it) < 9
+    }
+    val basinPointToRight = (p.x until locations.width).map {
+      Point(it, p.y)
+    }.takeWhile {
+      locations.getHeightAt(it) < 9
+    }
+    val basinPointToTop = (0..p.y).map {
+      Point(p.x, it)
+    }.reversed().takeWhile {
+      locations.getHeightAt(it) < 9
+    }
+    val basinPointToBottom = (p.y until locations.height).map {
+      Point(p.x, it)
+    }.takeWhile {
+      locations.getHeightAt(it) < 9
+    }
+    return (basinPointToLeft + basinPointToRight + basinPointToTop + basinPointToBottom).toSet()
+  }
+
+  fun basinPointsFrom(locations: Locations, p: Point): Set<Point> {
+    var currentBasinPoints = emptySet<Point>()
+    var newBasinPoints = listOf(p).toSet()
+    while (newBasinPoints.isNotEmpty()) {
+      currentBasinPoints += newBasinPoints
+      newBasinPoints = newBasinPoints.flatMap {
+        basinPointsOnLinesFrom(locations, it).filter {
+          !currentBasinPoints.contains(it)
+        }
+      }.toSet()
+    }
+    return currentBasinPoints
+  }
 }
 
 fun main() {
   val parsed = Day9.parseInput(Day9.input)
   println(Day9.part1(parsed))
+
+  val locations = Day9.Locations(parsed)
+  val lowPoint = Day9.Point(6, 4)
+  val basinPart = Day9.basinPointsOnLinesFrom(locations, lowPoint)
+  println(basinPart)
+  val basin = Day9.basinPointsFrom(locations, lowPoint)
+  println(basin)
+  println(basin.size)
 }
