@@ -95,18 +95,25 @@ object Day9 {
     return (basinPointToLeft + basinPointToRight + basinPointToTop + basinPointToBottom).toSet()
   }
 
+  fun basinPointsFronteer(locations: Locations, points: Set<Point>, oldBasinPoints: Set<Point>): Set<Point> {
+    return points.flatMap {
+      basinPointsOnLinesFrom(locations, it).filter {
+        !oldBasinPoints.contains(it)
+      }
+    }.toSet()
+  }
+
   fun basinPointsFrom(locations: Locations, p: Point): Set<Point> {
-    var currentBasinPoints = emptySet<Point>()
-    var newBasinPoints = listOf(p).toSet()
-    while (newBasinPoints.isNotEmpty()) {
-      currentBasinPoints += newBasinPoints
-      newBasinPoints = newBasinPoints.flatMap {
-        basinPointsOnLinesFrom(locations, it).filter {
-          !currentBasinPoints.contains(it)
-        }
-      }.toSet()
+    fun buildFullBasin(currentBasinPoints: Set<Point>, fronteer: Set<Point>): Set<Point> {
+      return if (fronteer.isEmpty()) {
+        currentBasinPoints
+      } else {
+        val newCurrentBasinPoints = currentBasinPoints + fronteer
+        val newFronteer = basinPointsFronteer(locations, fronteer, newCurrentBasinPoints)
+        buildFullBasin(newCurrentBasinPoints, newFronteer)
+      }
     }
-    return currentBasinPoints
+    return buildFullBasin(emptySet<Point>(), listOf(p).toSet())
   }
 
   fun part2(input: List<List<Int>>): Int {
