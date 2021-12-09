@@ -177,4 +177,17 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
   fun test_day8_part2() {
     assertEquals(61229, Day8.part2(day8TestInput))
   }
+
+  val day9TestInput = Day9.parseInput("""
+    2199943210
+    3987894921
+    9856789892
+    8767896789
+    9899965678
+  """.trimIndent())
+
+  @Test
+  fun test_day9_part1() {
+    assertEquals(15, Day9.part1(day9TestInput))
+  }
 }
