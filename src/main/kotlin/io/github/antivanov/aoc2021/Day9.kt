@@ -104,13 +104,13 @@ object Day9 {
   }
 
   fun basinPointsFrom(locations: Locations, p: Point): Set<Point> {
-    fun buildFullBasin(currentBasinPoints: Set<Point>, fronteer: Set<Point>): Set<Point> {
-      return if (fronteer.isEmpty()) {
+    fun buildFullBasin(currentBasinPoints: Set<Point>, frontier: Set<Point>): Set<Point> {
+      return if (frontier.isEmpty()) {
         currentBasinPoints
       } else {
-        val newCurrentBasinPoints = currentBasinPoints + fronteer
-        val newFronteer = basinPointsFronteer(locations, fronteer, newCurrentBasinPoints)
-        buildFullBasin(newCurrentBasinPoints, newFronteer)
+        val newCurrentBasinPoints = currentBasinPoints + frontier
+        val newFrontier = basinPointsFronteer(locations, frontier, newCurrentBasinPoints)
+        buildFullBasin(newCurrentBasinPoints, newFrontier)
       }
     }
     return buildFullBasin(emptySet<Point>(), listOf(p).toSet())
