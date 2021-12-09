@@ -108,17 +108,18 @@ object Day9 {
     }
     return currentBasinPoints
   }
+
+  fun part2(input: List<List<Int>>): Int {
+    val locations = Locations(input)
+    val lowPoints = getLowPoints(locations)
+    val lowPointBasinSizes = lowPoints.map { basinPointsFrom(locations, it).size }.sorted().reversed()
+    val topThreeBasinSizes = lowPointBasinSizes.take(3)
+    return topThreeBasinSizes.fold(1) { x, y -> x * y }
+  }
 }
 
 fun main() {
   val parsed = Day9.parseInput(Day9.input)
   println(Day9.part1(parsed))
-
-  val locations = Day9.Locations(parsed)
-  val lowPoint = Day9.Point(6, 4)
-  val basinPart = Day9.basinPointsOnLinesFrom(locations, lowPoint)
-  println(basinPart)
-  val basin = Day9.basinPointsFrom(locations, lowPoint)
-  println(basin)
-  println(basin.size)
+  println(Day9.part2(parsed))
 }
