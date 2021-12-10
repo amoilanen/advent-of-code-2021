@@ -81,12 +81,12 @@ object Day10 {
   fun getCompletionOf(evaluationResult: List<Char>): List<Char> =
     evaluationResult.map { openingToClosingBracket[it]!! }
 
-  fun scoreCompletion(completions: List<Char>): Int =
+  fun scoreCompletion(completions: List<Char>): Long =
     completions.fold(0) { current, next ->
       current * 5 + bracketAutocompletionPoints[next]!!
     }
 
-  fun medianOf(values: List<Int>): Int =
+  fun medianOf(values: List<Long>): Long =
     values.sorted()[values.size / 2]
 
   fun part1(expressions: List<List<Char>>): Int {
@@ -102,7 +102,7 @@ object Day10 {
     }.sum()
   }
 
-  fun part2(expressions: List<List<Char>>): Int {
+  fun part2(expressions: List<List<Char>>): Long {
     val evaluations = expressions.map {
       evaluateCorrectness(it)
     }
