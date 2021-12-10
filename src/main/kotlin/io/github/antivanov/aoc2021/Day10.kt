@@ -17,7 +17,7 @@ object Day10 {
 <{([{{}}[<[[[<>{}]]]>[]]
   """.trimIndent()
 
-  fun parse(input: String): List<List<Char>> =
+  fun parseInput(input: String): List<List<Char>> =
     input.split("\n").map {
       it.trim().toList()
     }
@@ -27,10 +27,10 @@ object Day10 {
   private val closingBrackets: List<Char> = ")]}>".toList()
   private val closingToOpeningBracket: Map<Char, Char> = closingBrackets.zip(openingBrackets).toMap()
   val invalidBracketPoints = hashMapOf(
-    '(' to 3,
-    '[' to 57,
-    '{' to 1197,
-    '<' to 25137
+    ')' to 3,
+    ']' to 57,
+    '}' to 1197,
+    '>' to 25137
   )
 
   fun isOpeningBracket(ch: Char): Boolean =
@@ -69,14 +69,22 @@ object Day10 {
 
     return readNext(expression, emptyList())
   }
+
+  fun part1(expressions: List<List<Char>>): Int {
+    val evaluations = expressions.map {
+      evaluateCorrectness(it)
+    }
+    return evaluations.map {
+      when (it) {
+        is Either.Left -> invalidBracketPoints.getOrDefault(it.value, 0)
+        is Either.Right -> 0
+        else -> 0
+      }
+    }.sum()
+  }
 }
 
 fun main() {
-  val parsedInput = Day10.parse(Day10.input)
-  println(parsedInput)
-
-  val correctness = parsedInput.map {
-    Day10.evaluateCorrectness(it)
-  }.filter { it.isLeft() }
-  println(correctness)
+  val parsedInput = Day10.parseInput(Day10.input)
+  println(Day10.part1(parsedInput))
 }

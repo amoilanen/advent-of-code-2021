@@ -195,4 +195,22 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
   fun test_day9_part2() {
     assertEquals(1134, Day9.part2(day9TestInput))
   }
+
+  val day10TestInput = Day10.parseInput("""
+    [({(<(())[]>[[{[]{<()<>>
+    [(()[<>])]({[<{<<[]>>(
+    {([(<{}[<>[]}>{[]{[(<()>
+    (((({<>}<{<{<>}{[]{[]{}
+    [[<[([]))<([[{}[[()]]]
+    [{[{({}]{}}([{[{{{}}([]
+    {<[[]]>}<{[{[{[]{()[[[]
+    [<(<(<(<{}))><([]([]()
+    <{([([[(<>()){}]>(<<{{
+    <{([{{}}[<[[[<>{}]]]>[]]
+  """.trimIndent())
+
+  @Test
+  fun test_day10_part1() {
+    assertEquals(26397, Day10.part1(day10TestInput))
+  }
 }
