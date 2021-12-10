@@ -1,6 +1,7 @@
 package io.github.antivanov.aoc2021
 
 import arrow.core.Either
+import arrow.core.flattenOption
 
 object Day10 {
 
@@ -26,11 +27,18 @@ object Day10 {
   private val openingBrackets: List<Char> = "([{<".toList()
   private val closingBrackets: List<Char> = ")]}>".toList()
   private val closingToOpeningBracket: Map<Char, Char> = closingBrackets.zip(openingBrackets).toMap()
-  val invalidBracketPoints = hashMapOf(
+  private val openingToClosingBracket: Map<Char, Char> = openingBrackets.zip(closingBrackets).toMap()
+  private val invalidBracketPoints = hashMapOf(
     ')' to 3,
     ']' to 57,
     '}' to 1197,
     '>' to 25137
+  )
+  private val bracketAutocompletionPoints = hashMapOf(
+    ')' to 1,
+    ']' to 2,
+    '}' to 3,
+    '>' to 4
   )
 
   fun isOpeningBracket(ch: Char): Boolean =
@@ -70,6 +78,17 @@ object Day10 {
     return readNext(expression, emptyList())
   }
 
+  fun getCompletionOf(evaluationResult: List<Char>): List<Char> =
+    evaluationResult.map { openingToClosingBracket[it]!! }
+
+  fun scoreCompletion(completions: List<Char>): Int =
+    completions.fold(0) { current, next ->
+      current * 5 + bracketAutocompletionPoints[next]!!
+    }
+
+  fun medianOf(values: List<Int>): Int =
+    values.sorted()[values.size / 2]
+
   fun part1(expressions: List<List<Char>>): Int {
     val evaluations = expressions.map {
       evaluateCorrectness(it)
@@ -82,9 +101,28 @@ object Day10 {
       }
     }.sum()
   }
+
+  fun part2(expressions: List<List<Char>>): Int {
+    val evaluations = expressions.map {
+      evaluateCorrectness(it)
+    }
+    val incompleteExpressionEvaluations = evaluations.filter {
+      it.isRight()
+    }.map {
+      it.orNone()
+    }.flattenOption()
+    val completions = incompleteExpressionEvaluations.map {
+      getCompletionOf(it)
+    }
+    val completionScores = completions.map {
+      scoreCompletion(it)
+    }
+    return medianOf(completionScores)
+  }
 }
 
 fun main() {
   val parsedInput = Day10.parseInput(Day10.input)
   println(Day10.part1(parsedInput))
+  println(Day10.part2(parsedInput))
 }
