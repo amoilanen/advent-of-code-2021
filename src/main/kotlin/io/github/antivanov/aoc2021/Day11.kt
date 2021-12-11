@@ -37,7 +37,7 @@ object Day11 {
 
     fun updateGrid(): Grid {
       incrementLevels(locations)
-      flashAndPropagateLevelChanges(locations)
+      checkIfToFlashAndPropagateIfFlashed(locations)
       return Grid(locations)
     }
 
@@ -50,15 +50,15 @@ object Day11 {
       return locations
     }
 
-    private fun flashAndPropagateLevelChanges(locations: Array<Array<Int>>): Unit {
+    private fun checkIfToFlashAndPropagateIfFlashed(locations: Array<Array<Int>>): Unit {
       (0 until width).flatMap { x ->
         (0 until height).map { y ->
-          propagateIfSufficientLevel(Point(x, y), locations)
+          checkIfToFlashAndPropagateIfFlashed(Point(x, y), locations)
         }
       }
     }
 
-    private fun propagateIfSufficientLevel(p: Point, locations: Array<Array<Int>>): Unit {
+    private fun checkIfToFlashAndPropagateIfFlashed(p: Point, locations: Array<Array<Int>>): Unit {
       if (locations[p.y][p.x] > 9) {
         locations[p.y][p.x] = 0
         propagateLevelChangesFrom(p, locations)
@@ -69,7 +69,7 @@ object Day11 {
       getAdjacentPoints(p).forEach {
         if (locations[it.y][it.x] != 0) {
           locations[it.y][it.x] += 1
-          propagateIfSufficientLevel(it, locations)
+          checkIfToFlashAndPropagateIfFlashed(it, locations)
         }
       }
     }
