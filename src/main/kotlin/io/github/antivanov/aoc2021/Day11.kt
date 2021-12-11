@@ -18,11 +18,12 @@ object Day11 {
   data class Point(val x: Int, val y: Int)
 
   data class Grid(val locations: Array<Array<Int>>) {
-    val width = locations[0].size
-    val height = locations.size
+    private val width = locations[0].size
+    private val height = locations.size
 
     private fun liesInGrid(p: Point): Boolean =
-      p.x >= 0 && p.x < width && p.y >= 0 && p.y < height
+      p.x in (0 until width) &&
+          p.y in  (0 until height)
 
     private fun getAdjacentPoints(p: Point): List<Point> {
       val subGrid = (-1..1).flatMap { xOffset ->
@@ -36,9 +37,10 @@ object Day11 {
     }
 
     fun updateGrid(): Grid {
-      incrementLevels(locations)
-      checkIfToFlashAndPropagateIfFlashed(locations)
-      return Grid(locations)
+      val updatedLocations = locations.copyOf().map { it.copyOf() }.toTypedArray()
+      incrementLevels(updatedLocations)
+      checkIfToFlashAndPropagateIfFlashed(updatedLocations)
+      return Grid(updatedLocations)
     }
 
     fun flashesCount(): Int =
@@ -51,16 +53,15 @@ object Day11 {
     fun areAllFlashed(): Boolean =
       flashesCount() == width * height
 
-    private fun incrementLevels(locations: Array<Array<Int>>): Array<Array<Int>> {
+    private fun incrementLevels(locations: Array<Array<Int>>) {
       (0 until width).flatMap { x ->
         (0 until height).map { y ->
           locations[y][x] += 1
         }
       }
-      return locations
     }
 
-    private fun checkIfToFlashAndPropagateIfFlashed(locations: Array<Array<Int>>): Unit {
+    private fun checkIfToFlashAndPropagateIfFlashed(locations: Array<Array<Int>>) {
       (0 until width).flatMap { x ->
         (0 until height).map { y ->
           checkIfToFlashAndPropagateIfFlashed(Point(x, y), locations)
@@ -68,14 +69,14 @@ object Day11 {
       }
     }
 
-    private fun checkIfToFlashAndPropagateIfFlashed(p: Point, locations: Array<Array<Int>>): Unit {
+    private fun checkIfToFlashAndPropagateIfFlashed(p: Point, locations: Array<Array<Int>>) {
       if (locations[p.y][p.x] > 9) {
         locations[p.y][p.x] = 0
         propagateLevelChangesFrom(p, locations)
       }
     }
 
-    private fun propagateLevelChangesFrom(p: Point, locations: Array<Array<Int>>): Unit {
+    private fun propagateLevelChangesFrom(p: Point, locations: Array<Array<Int>>) {
       getAdjacentPoints(p).forEach {
         if (locations[it.y][it.x] != 0) {
           locations[it.y][it.x] += 1
@@ -84,20 +85,10 @@ object Day11 {
       }
     }
 
-    private fun resetAfterFlash(locations: Array<Array<Int>>): Unit {
-      (0 until width).flatMap { x ->
-        (0 until height).map { y ->
-          if (locations[y][x] > 9) {
-            locations[y][x] += 0
-          }
-        }
-      }
-    }
-
     override fun toString(): String =
-      locations.map {
+      locations.joinToString("\n") {
         it.joinToString("")
-      }.joinToString("\n")
+      }
   }
 
   fun parseInput(input: String): Array<Array<Int>> =
@@ -126,15 +117,14 @@ object Day11 {
   }
 
   fun part2(parsedInput: Array<Array<Int>>): Int {
-    var currentGrid = gridFrom(parsedInput)
-    var currentStep = 0
-    var haveAllFlashed = false
-    while (!haveAllFlashed) {
-      currentStep = currentStep + 1
-      currentGrid = currentGrid.updateGrid()
-      haveAllFlashed = currentGrid.areAllFlashed()
+    fun firstStepWhenAllFlashed(grid: Grid, step: Int): Int {
+      val updatedGrid = grid.updateGrid()
+      return if (updatedGrid.areAllFlashed())
+        step + 1
+      else
+        firstStepWhenAllFlashed(updatedGrid, step + 1)
     }
-    return currentStep
+    return firstStepWhenAllFlashed(gridFrom(parsedInput), 0)
   }
 }
 
