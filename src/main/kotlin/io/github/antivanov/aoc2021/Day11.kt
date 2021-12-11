@@ -41,6 +41,13 @@ object Day11 {
       return Grid(locations)
     }
 
+    fun flashesCount(): Int =
+      (0 until width).flatMap { x ->
+        (0 until height).filter { y ->
+          locations[y][x] == 0
+        }
+      }.count()
+
     private fun incrementLevels(locations: Array<Array<Int>>): Array<Array<Int>> {
       (0 until width).flatMap { x ->
         (0 until height).map { y ->
@@ -86,7 +93,7 @@ object Day11 {
 
     override fun toString(): String =
       locations.map {
-        it.joinToString(" ")
+        it.joinToString("")
       }.joinToString("\n")
   }
 
@@ -99,18 +106,20 @@ object Day11 {
       }.toTypedArray()
     }.toTypedArray()
 
+  fun part1(parsedInput: Array<Array<Int>>): Int {
+    val clonedParsedInput = parsedInput.copyOf().map { it.copyOf() }.toTypedArray()
+    val initialGrid = Grid(clonedParsedInput)
+    val totalSteps = 100
+    val (_, finalFlashes) = (1..totalSteps).fold(initialGrid to 0) { (grid, flashes), _ ->
+      val updatedGrid = grid.updateGrid()
+      val updatedFlashes = flashes + updatedGrid.flashesCount()
+      updatedGrid to updatedFlashes
+    }
+    return finalFlashes
+  }
 }
 
 fun main() {
   val parsedInput = Day11.parseInput(Day11.input)
-  val initialGrid = Day11.Grid(parsedInput)
-
-
-  //println(initialGrid.toString())
-  //println()
-  val gridAfterStep1 = initialGrid.updateGrid()
-  //println(gridAfterStep1)
-  println()
-  val gridAfterStep2 = gridAfterStep1.updateGrid()
-  println(gridAfterStep2)
+  println(Day11.part1(parsedInput))
 }
