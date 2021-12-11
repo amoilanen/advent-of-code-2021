@@ -48,6 +48,9 @@ object Day11 {
         }
       }.count()
 
+    fun areAllFlashed(): Boolean =
+      flashesCount() == width * height
+
     private fun incrementLevels(locations: Array<Array<Int>>): Array<Array<Int>> {
       (0 until width).flatMap { x ->
         (0 until height).map { y ->
@@ -106,9 +109,13 @@ object Day11 {
       }.toTypedArray()
     }.toTypedArray()
 
-  fun part1(parsedInput: Array<Array<Int>>): Int {
+  private fun gridFrom(parsedInput: Array<Array<Int>>): Grid {
     val clonedParsedInput = parsedInput.copyOf().map { it.copyOf() }.toTypedArray()
-    val initialGrid = Grid(clonedParsedInput)
+    return Grid(clonedParsedInput)
+  }
+
+  fun part1(parsedInput: Array<Array<Int>>): Int {
+    val initialGrid = gridFrom(parsedInput)
     val totalSteps = 100
     val (_, finalFlashes) = (1..totalSteps).fold(initialGrid to 0) { (grid, flashes), _ ->
       val updatedGrid = grid.updateGrid()
@@ -117,9 +124,22 @@ object Day11 {
     }
     return finalFlashes
   }
+
+  fun part2(parsedInput: Array<Array<Int>>): Int {
+    var currentGrid = gridFrom(parsedInput)
+    var currentStep = 0
+    var haveAllFlashed = false
+    while (!haveAllFlashed) {
+      currentStep = currentStep + 1
+      currentGrid = currentGrid.updateGrid()
+      haveAllFlashed = currentGrid.areAllFlashed()
+    }
+    return currentStep
+  }
 }
 
 fun main() {
   val parsedInput = Day11.parseInput(Day11.input)
   println(Day11.part1(parsedInput))
+  println(Day11.part2(parsedInput))
 }
