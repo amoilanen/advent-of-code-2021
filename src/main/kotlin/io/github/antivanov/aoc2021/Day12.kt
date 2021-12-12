@@ -28,8 +28,14 @@ start-RW
   private fun isUppercaseNode(node: String): Boolean =
     node.uppercase() == node
 
+  private fun isStartNode(node: String): Boolean =
+    node == "start"
+
+  private fun isEndNode(node: String): Boolean =
+    node == "end"
+
   private fun isStartOrEndNode(node: String): Boolean =
-    node == "start" || node == "end"
+    isStartNode(node) || isEndNode(node)
 
   fun hasLowercaseNodeAtLeastTwice(nodes: List<String>): Boolean =
     nodes.filter {
@@ -53,12 +59,30 @@ start-RW
 
   data class Graph(val edges: Map<String, List<String>>) {
 
-    fun findPaths(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<List<String>> {
+    fun findPathsDepthFirst(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<Path> =
+      findPathsDepthFirst(Path(listOf(fromNode)), toNode, isEligiblePathContinuation)
+
+    fun findPathsDepthFirst(fromPath: Path, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<Path> {
+      return if (fromPath.lastPathNode == toNode) {
+        hashSetOf(fromPath)
+      } else {
+        val nextNodes = edges.getOrElse(fromPath.lastPathNode) {
+          emptyList()
+        }.filter {
+          isEligiblePathContinuation(fromPath, it)
+        }
+        nextNodes.flatMap {
+          findPathsDepthFirst(it, toNode, isEligiblePathContinuation)
+        }.toSet()
+      }
+    }
+
+    fun findPaths(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<Path> {
       fun buildNextPathSegment(partialPaths: Set<Path>, completedPaths: Set<Path>): Set<Path> {
         return if (partialPaths.isEmpty()) {
           completedPaths
         } else {
-          val newPaths = partialPaths.fold(emptySet<Path>()) { currentPaths, partialPath ->
+          val nextNodes = partialPaths.fold(emptySet<Path>()) { currentPaths, partialPath ->
             val newNodesToVisit = edges.getOrElse(partialPath.lastPathNode) {
               emptyList()
             }.filter {
@@ -67,8 +91,8 @@ start-RW
             val newPaths = newNodesToVisit.map { partialPath.appendNode(it) }.toSet()
             currentPaths + newPaths
           }
-          val newFinishedPaths = newPaths.filter { it.lastPathNode == toNode }.toSet()
-          val newPartialPaths = newPaths.filter { it.lastPathNode != toNode }.toSet()
+          val newFinishedPaths = nextNodes.filter { it.lastPathNode == toNode }.toSet()
+          val newPartialPaths = nextNodes.filter { it.lastPathNode != toNode }.toSet()
           val newCompletedPaths = newFinishedPaths + completedPaths
           if (newPartialPaths != partialPaths) {
             buildNextPathSegment(newPartialPaths, newCompletedPaths)
@@ -78,7 +102,7 @@ start-RW
         }
       }
       return buildNextPathSegment(setOf(Path(listOf(fromNode))), emptySet()).map {
-        it.nodes.reversed()
+        Path(it.nodes.reversed())
       }.toSet()
     }
 
