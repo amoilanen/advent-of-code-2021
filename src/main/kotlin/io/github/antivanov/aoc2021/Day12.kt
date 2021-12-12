@@ -2,13 +2,24 @@ package io.github.antivanov.aoc2021
 
 object Day12 {
   val input = """
-    start-A
-    start-b
-    A-c
-    A-b
-    b-d
-    A-end
-    b-end
+fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW
   """.trimIndent()
 
   data class Graph(val edges: Map<String, List<String>>) {
@@ -73,16 +84,13 @@ object Day12 {
     }
     return Graph(groupedEdges)
   }
+
+  fun part1(graph: Graph): Int  =
+    graph.findPaths("start", "end").size
 }
 
 fun main() {
   val graph = Day12.parseInput(Day12.input)
   println(graph)
-
-  val foundPaths = graph.findPaths("start", "end")
-  println("Found paths: ")
-  foundPaths.forEach {
-    println(it)
-  }
-  println("Total number of paths = ${foundPaths.size}")
+  println(Day12.part1(graph))
 }

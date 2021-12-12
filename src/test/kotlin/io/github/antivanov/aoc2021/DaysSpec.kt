@@ -241,4 +241,30 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
   fun test_day11_part2() {
     assertEquals(195, Day11.part2(day11TestInput))
   }
+
+  val day12TestInput = Day12.parseInput("""
+    fs-end
+    he-DX
+    fs-he
+    start-DX
+    pj-DX
+    end-zg
+    zg-sl
+    zg-pj
+    pj-he
+    RW-he
+    fs-DX
+    pj-RW
+    zg-RW
+    start-pj
+    he-WI
+    zg-he
+    pj-fs
+    start-RW
+  """.trimIndent())
+
+  @Test
+  fun test_day12_part1() {
+    assertEquals(226, Day12.part1(day12TestInput))
+  }
 }
