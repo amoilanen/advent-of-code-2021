@@ -20,36 +20,32 @@ object Day12 {
       node.uppercase() == node
 
     fun findPaths(fromNode: String, toNode: String): Set<List<String>> {
-      fun buildNextPathSegment(visitedLowercaseNodes: Set<String>, partialPaths: Set<List<String>>, completedPaths: Set<List<String>>): Set<List<String>> {
+      fun buildNextPathSegment(partialPaths: Set<List<String>>, completedPaths: Set<List<String>>): Set<List<String>> {
         return if (partialPaths.isEmpty()) {
           completedPaths
         } else {
-          val initialState = visitedLowercaseNodes to emptySet<List<String>>()
-          val (updatedVisitedLowercaseNodes, newPaths) = partialPaths.fold(initialState) { (currentVisitedLowercaseNodes, currentPaths), partialPath ->
+          val newPaths = partialPaths.fold(emptySet<List<String>>()) { currentPaths, partialPath ->
             val lastPathNode = partialPath.first()
             val newNodesToVisit = edges.getOrElse(lastPathNode) {
               emptyList()
             }.filter { newNodeToVisit ->
               isUppercaseNode(newNodeToVisit) ||
-                  (isLowercaseNode(newNodeToVisit) && !currentVisitedLowercaseNodes.contains(newNodeToVisit))
+                  (isLowercaseNode(newNodeToVisit) && !partialPath.contains(newNodeToVisit))
             }
-            val newLowercaseNodes = newNodesToVisit.filter { isLowercaseNode(it) }
             val newPaths = newNodesToVisit.map { listOf(it) + partialPath }.toSet()
-            val updatedPaths = currentPaths + newPaths
-            val updatedVisitedLowercaseNodes = currentVisitedLowercaseNodes + newLowercaseNodes
-            updatedVisitedLowercaseNodes to updatedPaths
+            currentPaths + newPaths
           }
-          val newFinishedPaths = newPaths.filter { it.last() == toNode }.toSet()
-          val newPartialPaths = newPaths.filter { it.last() != toNode }.toSet()
+          val newFinishedPaths = newPaths.filter { it.first() == toNode }.toSet()
+          val newPartialPaths = newPaths.filter { it.first() != toNode }.toSet()
           val newCompletedPaths = newFinishedPaths + completedPaths
           if (newPartialPaths != partialPaths) {
-            buildNextPathSegment(updatedVisitedLowercaseNodes, newPartialPaths, newCompletedPaths)
+            buildNextPathSegment(newPartialPaths, newCompletedPaths)
           } else {
             newCompletedPaths
           }
         }
       }
-      return buildNextPathSegment(emptySet(), setOf(listOf(fromNode)), emptySet()).map {
+      return buildNextPathSegment(setOf(listOf(fromNode)), emptySet()).map {
         it.reversed()
       }.toSet()
     }
