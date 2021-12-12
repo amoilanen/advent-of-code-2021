@@ -22,32 +22,44 @@ pj-fs
 start-RW
   """.trimIndent()
 
+  private fun isLowercaseNode(node: String): Boolean =
+    node.lowercase() == node
+
+  private fun isUppercaseNode(node: String): Boolean =
+    node.uppercase() == node
+
+  private fun isStartOrEndNode(node: String): Boolean =
+    node == "start" || node == "end"
+
+  data class Path(val nodes: List<String>) {
+    val alreadyHasLowercaseNodeAtLeastTwice = nodes.filter {
+      isLowercaseNode(it)
+    }.groupBy {
+      it
+    }.any {
+      it.value.size >= 2
+    }
+  }
+
   data class Graph(val edges: Map<String, List<String>>) {
 
-    private fun isLowercaseNode(node: String): Boolean =
-      node.lowercase() == node
-
-    private fun isUppercaseNode(node: String): Boolean =
-      node.uppercase() == node
-
-    fun findPaths(fromNode: String, toNode: String): Set<List<String>> {
-      fun buildNextPathSegment(partialPaths: Set<List<String>>, completedPaths: Set<List<String>>): Set<List<String>> {
+    fun findPaths(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<List<String>> {
+      fun buildNextPathSegment(partialPaths: Set<Path>, completedPaths: Set<Path>): Set<Path> {
         return if (partialPaths.isEmpty()) {
           completedPaths
         } else {
-          val newPaths = partialPaths.fold(emptySet<List<String>>()) { currentPaths, partialPath ->
-            val lastPathNode = partialPath.first()
+          val newPaths = partialPaths.fold(emptySet<Path>()) { currentPaths, partialPath ->
+            val lastPathNode = partialPath.nodes.first()
             val newNodesToVisit = edges.getOrElse(lastPathNode) {
               emptyList()
-            }.filter { newNodeToVisit ->
-              isUppercaseNode(newNodeToVisit) ||
-                  (isLowercaseNode(newNodeToVisit) && !partialPath.contains(newNodeToVisit))
+            }.filter {
+              isEligiblePathContinuation(partialPath, it)
             }
-            val newPaths = newNodesToVisit.map { listOf(it) + partialPath }.toSet()
+            val newPaths = newNodesToVisit.map { Path(listOf(it) + partialPath.nodes) }.toSet()
             currentPaths + newPaths
           }
-          val newFinishedPaths = newPaths.filter { it.first() == toNode }.toSet()
-          val newPartialPaths = newPaths.filter { it.first() != toNode }.toSet()
+          val newFinishedPaths = newPaths.filter { it.nodes.first() == toNode }.toSet()
+          val newPartialPaths = newPaths.filter { it.nodes.first() != toNode }.toSet()
           val newCompletedPaths = newFinishedPaths + completedPaths
           if (newPartialPaths != partialPaths) {
             buildNextPathSegment(newPartialPaths, newCompletedPaths)
@@ -56,8 +68,8 @@ start-RW
           }
         }
       }
-      return buildNextPathSegment(setOf(listOf(fromNode)), emptySet()).map {
-        it.reversed()
+      return buildNextPathSegment(setOf(Path(listOf(fromNode))), emptySet()).map {
+        it.nodes.reversed()
       }.toSet()
     }
 
@@ -85,12 +97,33 @@ start-RW
     return Graph(groupedEdges)
   }
 
+  private fun everyLowercaseNodeOnlyOnce(path: Path, continuation: String): Boolean =
+    isUppercaseNode(continuation) ||
+        (isLowercaseNode(continuation) && !path.nodes.contains(continuation))
+
+  private fun oneLowercaseNodeMightBeTwice(path: Path, continuation: String): Boolean =
+    isUppercaseNode(continuation) ||
+    (
+      isLowercaseNode(continuation) &&
+      (
+        !path.nodes.contains(continuation) ||
+        (
+          !path.alreadyHasLowercaseNodeAtLeastTwice &&
+          !isStartOrEndNode(continuation)
+        )
+      )
+    )
+
   fun part1(graph: Graph): Int  =
-    graph.findPaths("start", "end").size
+    graph.findPaths("start", "end", ::everyLowercaseNodeOnlyOnce).size
+
+  fun part2(graph: Graph): Int  =
+    graph.findPaths("start", "end", ::oneLowercaseNodeMightBeTwice).size
 }
 
 fun main() {
   val graph = Day12.parseInput(Day12.input)
   println(graph)
   println(Day12.part1(graph))
+  println(Day12.part2(graph))
 }
