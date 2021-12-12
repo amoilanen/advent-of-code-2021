@@ -59,22 +59,28 @@ start-RW
 
   data class Graph(val edges: Map<String, List<String>>) {
 
-    fun findPathsDepthFirst(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<Path> =
-      findPathsDepthFirst(Path(listOf(fromNode)), toNode, isEligiblePathContinuation)
-
-    fun findPathsDepthFirst(fromPath: Path, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<Path> {
-      return if (fromPath.lastPathNode == toNode) {
-        hashSetOf(fromPath)
-      } else {
-        val nextNodes = edges.getOrElse(fromPath.lastPathNode) {
-          emptyList()
-        }.filter {
-          isEligiblePathContinuation(fromPath, it)
+    fun countPathsDepthFirst(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Int {
+      fun find(pathsToExplore: Set<Path>, toNode: String, currentCount: Int, isEligiblePathContinuation: (Path, String) -> Boolean): Int {
+        return if (pathsToExplore.isEmpty())
+          currentCount
+        else {
+          val fromPath = pathsToExplore.first()
+          val restOfPathsToExplore = pathsToExplore.filter { it != fromPath }
+          val updatedCurrentCount = if (fromPath.lastPathNode == toNode)
+            currentCount + 1
+          else
+            currentCount
+          val nextPathsFromPath = edges.getOrElse(fromPath.lastPathNode) {
+            emptyList()
+          }.filter {
+            isEligiblePathContinuation(fromPath, it)
+          }.map {
+            fromPath.appendNode(it)
+          }.toSet()
+          find(nextPathsFromPath + restOfPathsToExplore, toNode, updatedCurrentCount, isEligiblePathContinuation)
         }
-        nextNodes.flatMap {
-          findPathsDepthFirst(it, toNode, isEligiblePathContinuation)
-        }.toSet()
       }
+      return find(setOf(Path(listOf(fromNode))), toNode, 0, isEligiblePathContinuation)
     }
 
     fun findPaths(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<Path> {
@@ -148,10 +154,10 @@ start-RW
     )
 
   fun part1(graph: Graph): Int  =
-    graph.findPaths("start", "end", ::everyLowercaseNodeOnlyOnce).size
+    graph.countPathsDepthFirst("start", "end", ::everyLowercaseNodeOnlyOnce)
 
   fun part2(graph: Graph): Int  =
-    graph.findPaths("start", "end", ::oneLowercaseNodeMightBeTwice).size
+    graph.countPathsDepthFirst("start", "end", ::oneLowercaseNodeMightBeTwice)
 }
 
 fun main() {
