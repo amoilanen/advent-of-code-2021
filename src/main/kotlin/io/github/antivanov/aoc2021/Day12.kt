@@ -31,14 +31,24 @@ start-RW
   private fun isStartOrEndNode(node: String): Boolean =
     node == "start" || node == "end"
 
-  data class Path(val nodes: List<String>) {
-    val alreadyHasLowercaseNodeAtLeastTwice = nodes.filter {
+  fun hasLowercaseNodeAtLeastTwice(nodes: List<String>): Boolean =
+    nodes.filter {
       isLowercaseNode(it)
     }.groupBy {
       it
     }.any {
       it.value.size >= 2
     }
+
+  data class Path(val nodes: List<String>, val alreadyHasLowercaseNodeAtLeastTwice: Boolean = false) {
+
+    val lastPathNode: String = nodes.first()
+
+    fun appendNode(node: String): Path {
+      val newNodes = listOf(node) + nodes
+      return Path(newNodes, alreadyHasLowercaseNodeAtLeastTwice || hasLowercaseNodeAtLeastTwice(newNodes))
+    }
+
   }
 
   data class Graph(val edges: Map<String, List<String>>) {
@@ -49,17 +59,16 @@ start-RW
           completedPaths
         } else {
           val newPaths = partialPaths.fold(emptySet<Path>()) { currentPaths, partialPath ->
-            val lastPathNode = partialPath.nodes.first()
-            val newNodesToVisit = edges.getOrElse(lastPathNode) {
+            val newNodesToVisit = edges.getOrElse(partialPath.lastPathNode) {
               emptyList()
             }.filter {
               isEligiblePathContinuation(partialPath, it)
             }
-            val newPaths = newNodesToVisit.map { Path(listOf(it) + partialPath.nodes) }.toSet()
+            val newPaths = newNodesToVisit.map { partialPath.appendNode(it) }.toSet()
             currentPaths + newPaths
           }
-          val newFinishedPaths = newPaths.filter { it.nodes.first() == toNode }.toSet()
-          val newPartialPaths = newPaths.filter { it.nodes.first() != toNode }.toSet()
+          val newFinishedPaths = newPaths.filter { it.lastPathNode == toNode }.toSet()
+          val newPartialPaths = newPaths.filter { it.lastPathNode != toNode }.toSet()
           val newCompletedPaths = newFinishedPaths + completedPaths
           if (newPartialPaths != partialPaths) {
             buildNextPathSegment(newPartialPaths, newCompletedPaths)
