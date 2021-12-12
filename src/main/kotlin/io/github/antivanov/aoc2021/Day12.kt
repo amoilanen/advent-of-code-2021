@@ -83,6 +83,33 @@ start-RW
       return find(setOf(Path(listOf(fromNode))), toNode, 0, isEligiblePathContinuation)
     }
 
+    // ?! - Helping Kotlin compiler optimize tail recursion - otherwise it does not do it for some reason, normally a compiler should do it
+    fun countPathsDepthFirstTailRecursionOptimized(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Int {
+      var pathsToExplore = setOf(Path(listOf(fromNode)))
+      var currentCount = 0
+      while (!pathsToExplore.isEmpty()) {
+        val fromPath = pathsToExplore.first()
+        val restOfPathsToExplore = pathsToExplore.filter { it != fromPath }
+        currentCount = if (fromPath.lastPathNode == toNode)
+          currentCount + 1
+        else
+          currentCount
+        val nextPathsFromPath = edges.getOrElse(fromPath.lastPathNode) {
+          emptyList()
+        }.filter {
+          isEligiblePathContinuation(fromPath, it)
+        }.map {
+          fromPath.appendNode(it)
+        }.toSet()
+        pathsToExplore = nextPathsFromPath + restOfPathsToExplore
+      }
+      return currentCount
+    }
+
+    /*
+     * Original and less efficient algorithm - much more data shifted around between procedure call stacks (all the paths being built),
+     * depth-first solution is much more efficient as the the number of constructed paths held in memory at any moment is much smaller.
+     */
     fun findPaths(fromNode: String, toNode: String, isEligiblePathContinuation: (Path, String) -> Boolean): Set<Path> {
       fun buildNextPathSegment(partialPaths: Set<Path>, completedPaths: Set<Path>): Set<Path> {
         return if (partialPaths.isEmpty()) {
@@ -154,10 +181,10 @@ start-RW
     )
 
   fun part1(graph: Graph): Int  =
-    graph.countPathsDepthFirst("start", "end", ::everyLowercaseNodeOnlyOnce)
+    graph.countPathsDepthFirstTailRecursionOptimized("start", "end", ::everyLowercaseNodeOnlyOnce)
 
   fun part2(graph: Graph): Int  =
-    graph.countPathsDepthFirst("start", "end", ::oneLowercaseNodeMightBeTwice)
+    graph.countPathsDepthFirstTailRecursionOptimized("start", "end", ::oneLowercaseNodeMightBeTwice)
 }
 
 fun main() {
