@@ -88,9 +88,13 @@ object Day13 {
   fun parseInput(input: String): Pair<DottedPaper, List<FoldingInstruction>> {
     val lines = input.split("\n").map { it.trim() }
     val paperAndInstructionInputs = ParsingUtils.splitByElement(lines, "")
+    val paper = parseDottedPaper(paperAndInstructionInputs[0])
+    val instructions = parseFoldingInstructions(paperAndInstructionInputs[1])
+    return paper to instructions
+  }
 
-    val paperDots = paperAndInstructionInputs[0]
-    val dots = paperDots.map { dotInput ->
+  fun parseDottedPaper(paperInput: List<String>): DottedPaper {
+    val dots = paperInput.map { dotInput ->
       val xAndY = dotInput.split(",").map {
         it.toInt()
       }
@@ -99,17 +103,15 @@ object Day13 {
 
     val width = (dots.map { it.x } + setOf(-1)).maxOrNull()!! + 1
     val height = (dots.map { it.y } + setOf(-1)).maxOrNull()!! + 1
-    val paper = DottedPaper(dots, width, height)
+    return DottedPaper(dots, width, height)
+  }
 
-    val instructionsInput = paperAndInstructionInputs[1]
-    val instructions = instructionsInput.map {
+  fun parseFoldingInstructions(instructionsInput: List<String>): List<FoldingInstruction> =
+    instructionsInput.map {
       foldingInstructionRegex.matchEntire(it)!!.destructured.let { (axis, value) ->
         FoldingInstruction(axis, value.toInt())
       }
     }
-
-    return paper to instructions
-  }
 }
 
 fun main() {
