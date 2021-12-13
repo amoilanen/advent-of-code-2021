@@ -34,40 +34,48 @@ object Day13 {
       dots.contains(point)
 
     fun foldAlongY(foldY: Int): DottedPaper {
-      val dotsBelow = dots.filter { it.y > foldY }
-      val dotsAbove = dots.filter { it.y < foldY }
-
-      val aboveHeight = foldY
-
-      val dotsBelowRelativeFoldCoordinates = dotsBelow.map {
-        it.copy(y = it.y - foldY - 1)
-      }
-      val belowHeight = height - aboveHeight - 1
-
-      val maxDotsBelowRelativeY = belowHeight - 1
-      val dotsBelowShift = if (aboveHeight > belowHeight)
-        aboveHeight - belowHeight
-      else
-        0
-      val foldedDotsBelow = dotsBelowRelativeFoldCoordinates.map {
-        it.copy(y = dotsBelowShift + maxDotsBelowRelativeY - it.y)
-      }.toSet()
-
-      val dotsAboveShift = if (belowHeight > aboveHeight)
-        belowHeight - aboveHeight
-      else
-        0
-      val foldedDotsAbove = dotsAbove.map {
-        it.copy(y = it.y - dotsAboveShift)
-      }.toSet()
-
-      val allFoldedDots = foldedDotsBelow + foldedDotsAbove
-      val updatedHeight = maxOf(belowHeight, aboveHeight)
-      return DottedPaper(allFoldedDots, width, updatedHeight)
+      val (foldedDots, updatedHeight) = foldDots(
+        foldY,
+        height,
+        { p -> p.y },
+        { p, value -> p.copy(y = value) }
+      )
+      return DottedPaper(foldedDots, width, updatedHeight)
     }
 
     fun foldAlongX(x: Int): DottedPaper {
       return this
+    }
+
+    private fun foldDots(foldValue: Int, dimensionValue: Int, coordinateAccessor: (Point) -> Int, coordinateUpdator: (Point, Int) -> Point): Pair<Set<Point>, Int> {
+      val dotsAfter = dots.filter { coordinateAccessor(it) > foldValue }
+      val dotsBefore = dots.filter { coordinateAccessor(it) < foldValue }
+
+      val beforeDimension = foldValue
+
+      val dotsAfterRelativeFoldCoordinates = dotsAfter.map {
+        coordinateUpdator(it, coordinateAccessor(it) - foldValue - 1)
+      }
+      val afterDimension = dimensionValue - beforeDimension - 1
+
+      val dotsAfterShift = if (beforeDimension > afterDimension)
+        beforeDimension - afterDimension
+      else
+        0
+      val foldedDotsAfter = dotsAfterRelativeFoldCoordinates.map {
+        coordinateUpdator(it, dotsAfterShift + afterDimension - 1 - coordinateAccessor(it))
+      }.toSet()
+
+      val dotsBeforeShift = if (afterDimension > beforeDimension)
+        afterDimension - beforeDimension
+      else
+        0
+      val foldedDotsBefore = dotsBefore.map {
+        coordinateUpdator(it, coordinateAccessor(it) - dotsBeforeShift)
+      }.toSet()
+
+      val updatedDimension = maxOf(afterDimension, beforeDimension)
+      return (foldedDotsAfter + foldedDotsBefore) to updatedDimension
     }
 
     override fun toString(): String =
