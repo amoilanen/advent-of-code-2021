@@ -43,8 +43,14 @@ object Day13 {
       return DottedPaper(foldedDots, width, updatedHeight)
     }
 
-    fun foldAlongX(x: Int): DottedPaper {
-      return this
+    fun foldAlongX(foldX: Int): DottedPaper {
+      val (foldedDots, updatedWidth) = foldDots(
+        foldX,
+        width,
+        { p -> p.x },
+        { p, value -> p.copy(x = value) }
+      )
+      return DottedPaper(foldedDots, updatedWidth, height)
     }
 
     private fun foldDots(foldValue: Int, dimensionValue: Int, coordinateAccessor: (Point) -> Int, coordinateUpdator: (Point, Int) -> Point): Pair<Set<Point>, Int> {
@@ -132,4 +138,8 @@ fun main() {
   println("Folded:")
   val foldedPaper = paper.foldAlongY(7)
   println(foldedPaper)
+
+  println()
+  val foldedAgain = foldedPaper.foldAlongX(5)
+  println(foldedAgain)
 }
