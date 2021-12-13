@@ -272,4 +272,34 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
   fun test_day12_part2() {
     assertEquals(3509, Day12.part2(day12TestInput))
   }
+
+  val day13TestInput = Day13.parseInput("""
+    6,10
+    0,14
+    9,10
+    0,3
+    10,4
+    4,11
+    6,0
+    6,12
+    4,1
+    0,13
+    10,12
+    3,4
+    3,0
+    8,4
+    1,10
+    2,14
+    8,10
+    9,0
+
+    fold along y=7
+    fold along x=5
+  """.trimIndent())
+
+  @Test
+  fun test_day13_part1() {
+    val (day13Paper, day13Instructions) = day13TestInput
+    assertEquals(17, Day13.part1(day13Paper, day13Instructions))
+  }
 }

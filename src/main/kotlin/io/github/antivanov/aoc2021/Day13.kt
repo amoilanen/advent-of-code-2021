@@ -126,20 +126,22 @@ object Day13 {
         FoldingInstruction(axis, value.toInt())
       }
     }
+
+  fun applyInstruction(paper: DottedPaper, instruction: FoldingInstruction): DottedPaper =
+    when (instruction.axis) {
+      "x" -> paper.foldAlongX(instruction.value)
+      "y" -> paper.foldAlongY(instruction.value)
+      else -> paper
+    }
+
+  fun part1(paper: DottedPaper, instructions: List<FoldingInstruction>): Int {
+    val firstInstruction = instructions.first()
+    val partiallyFoldedPaper = applyInstruction(paper, firstInstruction)
+    return partiallyFoldedPaper.dots.size
+  }
 }
 
 fun main() {
   val (paper, instructions) = Day13.parseInput(Day13.input)
-
-  println(paper)
-  println(instructions)
-
-  println()
-  println("Folded:")
-  val foldedPaper = paper.foldAlongY(7)
-  println(foldedPaper)
-
-  println()
-  val foldedAgain = foldedPaper.foldAlongX(5)
-  println(foldedAgain)
+  println(Day13.part1(paper, instructions))
 }
