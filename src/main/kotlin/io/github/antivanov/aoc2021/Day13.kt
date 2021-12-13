@@ -4,27 +4,27 @@ import io.github.antivanov.aoc2021.util.ParsingUtils
 
 object Day13 {
   val input = """
-    6,10
-    0,14
-    9,10
-    0,3
-    10,4
-    4,11
-    6,0
-    6,12
-    4,1
-    0,13
-    10,12
-    3,4
-    3,0
-    8,4
-    1,10
-    2,14
-    8,10
-    9,0
+6,10
+0,14
+9,10
+0,3
+10,4
+4,11
+6,0
+6,12
+4,1
+0,13
+10,12
+3,4
+3,0
+8,4
+1,10
+2,14
+8,10
+9,0
 
-    fold along y=7
-    fold along x=5
+fold along y=7
+fold along x=5
   """.trimIndent()
 
   data class Point(val x: Int, val y: Int)
@@ -139,9 +139,15 @@ object Day13 {
     val partiallyFoldedPaper = applyInstruction(paper, firstInstruction)
     return partiallyFoldedPaper.dots.size
   }
+
+  fun part2(paper: DottedPaper, instructions: List<FoldingInstruction>): DottedPaper =
+    instructions.fold(paper) { currentPaper, instruction ->
+      applyInstruction(currentPaper, instruction)
+    }
 }
 
 fun main() {
   val (paper, instructions) = Day13.parseInput(Day13.input)
   println(Day13.part1(paper, instructions))
+  println(Day13.part2(paper, instructions))
 }

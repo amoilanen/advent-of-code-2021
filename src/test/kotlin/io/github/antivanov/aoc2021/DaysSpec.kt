@@ -302,4 +302,18 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     val (day13Paper, day13Instructions) = day13TestInput
     assertEquals(17, Day13.part1(day13Paper, day13Instructions))
   }
+
+  @Test
+  fun test_day13_part2() {
+    val (day13Paper, day13Instructions) = day13TestInput
+    assertEquals("""
+#####
+#...#
+#...#
+#...#
+#####
+.....
+.....
+""".trimIndent(), Day13.part2(day13Paper, day13Instructions).toString())
+  }
 }
