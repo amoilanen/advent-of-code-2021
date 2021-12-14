@@ -1,5 +1,8 @@
 package io.github.antivanov.aoc2021
 
+import arrow.core.flatten
+import arrow.core.toOption
+
 object Day14 {
 
   val input = """
@@ -24,15 +27,38 @@ object Day14 {
   """.trimIndent()
 
   data class Rule(val fromPair: String, val toPairs: List<String>)
-  data class Polymer(val pairCounts: Map<String, Int>, val start: Char, val end: Char)
 
-  fun parseInput(input: String): Pair<Polymer, List<Rule>> {
+  data class Rules(val pairToRuleMapping: Map<String, Rule>)
+
+  data class Polymer(val pairCounts: Map<String, Int>, val start: Char, val end: Char) {
+    fun length(): Int {
+      val pairsCount = pairCounts.map { it.value }.sum()
+      return pairsCount + 1 // start and end symbol participate in a single pair each -> we did not count one of them
+    }
+
+    fun update(rules: Rules): Polymer {
+      val updatedPairsNotNormalized = pairCounts.flatMap {
+        val pair = it.key
+        val pairCount = it.value
+        val newPairs = rules.pairToRuleMapping[pair].toOption().toList().map { it.toPairs }.flatten()
+        newPairs.map { it to pairCount }
+      }
+      val updatedPairs = updatedPairsNotNormalized.groupBy {
+        it.first
+      }.mapValues { samePairRepetitions ->
+        samePairRepetitions.value.map { pair ->
+          pair.second
+        }.sum()
+      }
+      return Polymer(updatedPairs, start, end)
+    }
+  }
+
+  fun parseInput(input: String): Pair<Polymer, Rules> {
     val lines = input.split("\n").map { it.trim() }
-    val polymerInput = lines[0]
-    val rulesInput = lines.drop(2)
-    val input = parsePolymer(polymerInput)
-    val rules = rulesInput.map { parseRule(it) }
-    return input to rules
+    val polymer = parsePolymer(lines[0])
+    val rules = parseRules(lines.drop(2))
+    return polymer to rules
   }
 
   fun parsePolymer(polymerInput: String): Polymer {
@@ -44,6 +70,12 @@ object Day14 {
         it.value.size
       }
     return Polymer(pairCounts, polymerInput.first(), polymerInput.last())
+  }
+
+  fun parseRules(rulesInput: List<String>): Rules {
+    val rules = rulesInput.map { parseRule(it) }
+    val pairToRuleMapping = rules.map { it.fromPair to it }.toMap()
+    return Rules(pairToRuleMapping)
   }
 
   fun parseRule(ruleInput: String): Rule {
@@ -63,5 +95,10 @@ object Day14 {
 fun main() {
   val (polymer, rules) = Day14.parseInput(Day14.input)
   println(polymer)
+  println(polymer.length())
   println(rules)
+  println()
+
+  val updatedPolymer = polymer.update(rules)
+  println(updatedPolymer)
 }
