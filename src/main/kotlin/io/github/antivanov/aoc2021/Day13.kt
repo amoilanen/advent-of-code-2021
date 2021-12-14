@@ -77,7 +77,7 @@ fold along x=5
       else
         0
       val foldedDotsBefore = dotsBefore.map {
-        coordinateUpdator(it, coordinateAccessor(it) - dotsBeforeShift)
+        coordinateUpdator(it, dotsBeforeShift + coordinateAccessor(it))
       }.toSet()
 
       val updatedDimension = maxOf(afterDimension, beforeDimension)
