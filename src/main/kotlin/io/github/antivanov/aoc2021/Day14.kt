@@ -36,6 +36,23 @@ object Day14 {
       return pairsCount + 1 // start and end symbol participate in a single pair each -> we did not count one of them
     }
 
+    fun computeElementFrequencies(): Map<Char, Int> {
+      val frequencies = pairCounts.flatMap {
+        val pair = it.key
+        val frequency = it.value
+        pair.toList().map { it to frequency }
+      }.groupBy {
+        it.first
+      }.mapValues { sameSymbolRepetitions ->
+        sameSymbolRepetitions.value.map { pair ->
+          pair.second
+        }.sum()
+      }
+      // start and end symbol participate in a single pair each -> we did not count one of them
+      val doubledFrequencies = frequencies + (start to (frequencies[start]!! + 1)) +  (end to (frequencies[end]!! + 1))
+      return doubledFrequencies.mapValues { it.value / 2 }
+    }
+
     fun update(rules: Rules): Polymer {
       val updatedPairsNotNormalized = pairCounts.flatMap {
         val pair = it.key
@@ -90,6 +107,21 @@ object Day14 {
     }
     return Rule(fromPair, toPairs)
   }
+
+  fun updateTimes(initial: Polymer, rules: Rules, times: Int): Polymer =
+    (1..times).fold(initial) { current, _ ->
+      current.update(rules)
+    }
+
+  fun part1(polymer: Polymer, rules: Rules): Int {
+    val updatedPolymer = updateTimes(polymer, rules, 10)
+    val elementFrequencies = updatedPolymer.computeElementFrequencies()
+
+    val frequencies = elementFrequencies.map { it.value }.sorted()
+    val smallestFrequency = frequencies.first()
+    val largestFrequency = frequencies.last()
+    return largestFrequency - smallestFrequency
+  }
 }
 
 fun main() {
@@ -101,4 +133,16 @@ fun main() {
 
   val updatedPolymer = polymer.update(rules)
   println(updatedPolymer)
+
+  val updateTimes = listOf(2, 5, 10)
+  updateTimes.forEach {
+    val updatedPolymer = Day14.updateTimes(polymer, rules, it)
+    val lengthOfUpdatedPolymer = updatedPolymer.length()
+    val frequencies = updatedPolymer.computeElementFrequencies()
+    println("times = ${it}, length = ${lengthOfUpdatedPolymer}")
+    println(frequencies)
+  }
+
+  println()
+  println(Day14.part1(polymer, rules))
 }

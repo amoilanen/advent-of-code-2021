@@ -316,4 +316,31 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 .....
 """.trimIndent(), Day13.part2(day13Paper, day13Instructions).toString())
   }
+
+  val day14TestInput = Day14.parseInput("""
+    NNCB
+
+    CH -> B
+    HH -> N
+    CB -> H
+    NH -> C
+    HB -> C
+    HC -> B
+    HN -> C
+    NN -> C
+    BH -> H
+    NC -> B
+    NB -> B
+    BN -> B
+    BB -> N
+    BC -> B
+    CC -> N
+    CN -> C
+  """.trimIndent())
+
+  @Test
+  fun test_day14_part1() {
+    val (polymer, rules) = day14TestInput
+    assertEquals(1588, Day14.part1(polymer, rules))
+  }
 }
