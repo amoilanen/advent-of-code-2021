@@ -122,23 +122,5 @@ object Day14 {
 
 fun main() {
   val (polymer, rules) = Day14.parseInput(Day14.input)
-  println(polymer)
-  println(polymer.length())
-  println(rules)
-  println()
-
-  val updatedPolymer = polymer.update(rules)
-  println(updatedPolymer)
-
-  val updateTimes = listOf(2, 5, 10)
-  updateTimes.forEach {
-    val updatedPolymer = Day14.updateTimes(polymer, rules, it)
-    val lengthOfUpdatedPolymer = updatedPolymer.length()
-    val frequencies = updatedPolymer.computeElementFrequencies()
-    println("times = ${it}, length = ${lengthOfUpdatedPolymer}")
-    println(frequencies)
-  }
-
-  println()
   println(Day14.part1(polymer, rules))
 }
