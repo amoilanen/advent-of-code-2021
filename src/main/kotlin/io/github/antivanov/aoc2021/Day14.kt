@@ -46,10 +46,10 @@ object Day14 {
     }
 
     fun computeElementFrequencies(): Map<Char, Long> {
-      val frequencies = mergeCounts(pairCounts.flatMap {
-        val pair = it.key
-        val frequency = it.value
-        pair.toList().map { it to frequency }
+      val frequencies = mergeCounts(pairCounts.flatMap { pairAndCount ->
+        val pair = pairAndCount.key
+        val count = pairAndCount.value
+        pair.toList().map { it to count }
       })
       // start and end symbol participate in a single pair each -> we did not count one of them
       val doubledFrequencies = frequencies + (start to (frequencies[start]!! + 1)) +  (end to (frequencies[end]!! + 1))
