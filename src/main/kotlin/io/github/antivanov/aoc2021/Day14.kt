@@ -30,7 +30,7 @@ object Day14 {
 
   data class Rules(val pairToRuleMapping: Map<String, Rule>)
 
-  fun <T> mergeCounts(pairs: List<Pair<T, Int>>): Map<T, Int> =
+  fun <T> mergeCounts(pairs: List<Pair<T, Long>>): Map<T, Long> =
     pairs.groupBy {
       it.first
     }.mapValues { repetitions ->
@@ -39,13 +39,13 @@ object Day14 {
       }.sum()
     }
 
-  data class Polymer(val pairCounts: Map<String, Int>, val start: Char, val end: Char) {
-    fun length(): Int {
+  data class Polymer(val pairCounts: Map<String, Long>, val start: Char, val end: Char) {
+    fun length(): Long {
       val pairsCount = pairCounts.map { it.value }.sum()
       return pairsCount + 1 // start and end symbol participate in a single pair each -> we did not count one of them
     }
 
-    fun computeElementFrequencies(): Map<Char, Int> {
+    fun computeElementFrequencies(): Map<Char, Long> {
       val frequencies = mergeCounts(pairCounts.flatMap {
         val pair = it.key
         val frequency = it.value
@@ -57,10 +57,12 @@ object Day14 {
     }
 
     fun update(rules: Rules): Polymer {
-      val updatedPairs = mergeCounts(pairCounts.flatMap {
-        val pair = it.key
-        val pairCount = it.value
-        val newPairs = rules.pairToRuleMapping[pair].toOption().toList().map { it.toPairs }.flatten()
+      val updatedPairs = mergeCounts(pairCounts.flatMap { pairAndCount ->
+        val pair = pairAndCount.key
+        val pairCount = pairAndCount.value
+        val newPairs = rules.pairToRuleMapping[pair].toOption().toList().map {
+          it.toPairs
+        }.flatten()
         newPairs.map { it to pairCount }
       })
       return Polymer(updatedPairs, start, end)
@@ -80,7 +82,7 @@ object Day14 {
     }
     val pairCounts = pairs.groupBy { it }
       .mapValues {
-        it.value.size
+        it.value.size.toLong()
       }
     return Polymer(pairCounts, polymerInput.first(), polymerInput.last())
   }
@@ -104,13 +106,13 @@ object Day14 {
     return Rule(fromPair, toPairs)
   }
 
-  fun updateTimes(initial: Polymer, rules: Rules, times: Int): Polymer =
-    (1..times).fold(initial) { current, _ ->
+  fun updateTimes(initial: Polymer, rules: Rules, steps: Int): Polymer =
+    (1..steps).fold(initial) { current, _ ->
       current.update(rules)
     }
 
-  fun part1(polymer: Polymer, rules: Rules): Int {
-    val updatedPolymer = updateTimes(polymer, rules, 10)
+  fun differenceMostCommonAndLessCommonFrequencies(polymer: Polymer, rules: Rules, steps: Int): Long {
+    val updatedPolymer = updateTimes(polymer, rules, steps)
     val elementFrequencies = updatedPolymer.computeElementFrequencies()
 
     val frequencies = elementFrequencies.map { it.value }.sorted()
@@ -118,9 +120,16 @@ object Day14 {
     val largestFrequency = frequencies.last()
     return largestFrequency - smallestFrequency
   }
+
+  fun part1(polymer: Polymer, rules: Rules): Long =
+    differenceMostCommonAndLessCommonFrequencies(polymer, rules, 10)
+
+  fun part2(polymer: Polymer, rules: Rules): Long =
+    differenceMostCommonAndLessCommonFrequencies(polymer, rules, 40)
 }
 
 fun main() {
   val (polymer, rules) = Day14.parseInput(Day14.input)
   println(Day14.part1(polymer, rules))
+  println(Day14.part2(polymer, rules))
 }

@@ -343,4 +343,10 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     val (polymer, rules) = day14TestInput
     assertEquals(1588, Day14.part1(polymer, rules))
   }
+
+  @Test
+  fun test_day14_part2() {
+    val (polymer, rules) = day14TestInput
+    assertEquals(2188189693529, Day14.part2(polymer, rules))
+  }
 }
