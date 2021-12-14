@@ -30,6 +30,15 @@ object Day14 {
 
   data class Rules(val pairToRuleMapping: Map<String, Rule>)
 
+  fun <T> mergeCounts(pairs: List<Pair<T, Int>>): Map<T, Int> =
+    pairs.groupBy {
+      it.first
+    }.mapValues { repetitions ->
+      repetitions.value.map { pair ->
+        pair.second
+      }.sum()
+    }
+
   data class Polymer(val pairCounts: Map<String, Int>, val start: Char, val end: Char) {
     fun length(): Int {
       val pairsCount = pairCounts.map { it.value }.sum()
@@ -37,36 +46,23 @@ object Day14 {
     }
 
     fun computeElementFrequencies(): Map<Char, Int> {
-      val frequencies = pairCounts.flatMap {
+      val frequencies = mergeCounts(pairCounts.flatMap {
         val pair = it.key
         val frequency = it.value
         pair.toList().map { it to frequency }
-      }.groupBy {
-        it.first
-      }.mapValues { sameSymbolRepetitions ->
-        sameSymbolRepetitions.value.map { pair ->
-          pair.second
-        }.sum()
-      }
+      })
       // start and end symbol participate in a single pair each -> we did not count one of them
       val doubledFrequencies = frequencies + (start to (frequencies[start]!! + 1)) +  (end to (frequencies[end]!! + 1))
       return doubledFrequencies.mapValues { it.value / 2 }
     }
 
     fun update(rules: Rules): Polymer {
-      val updatedPairsNotNormalized = pairCounts.flatMap {
+      val updatedPairs = mergeCounts(pairCounts.flatMap {
         val pair = it.key
         val pairCount = it.value
         val newPairs = rules.pairToRuleMapping[pair].toOption().toList().map { it.toPairs }.flatten()
         newPairs.map { it to pairCount }
-      }
-      val updatedPairs = updatedPairsNotNormalized.groupBy {
-        it.first
-      }.mapValues { samePairRepetitions ->
-        samePairRepetitions.value.map { pair ->
-          pair.second
-        }.sum()
-      }
+      })
       return Polymer(updatedPairs, start, end)
     }
   }
