@@ -349,4 +349,22 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     val (polymer, rules) = day14TestInput
     assertEquals(2188189693529, Day14.part2(polymer, rules))
   }
+
+  val day15TestInput = Day15.parseInput("""
+    1163751742
+    1381373672
+    2136511328
+    3694931569
+    7463417111
+    1319128137
+    1359912421
+    3125421639
+    1293138521
+    2311944581
+  """.trimIndent())
+
+  @Test
+  fun test_day15_part1() {
+    assertEquals(40, Day15.part1(day15TestInput))
+  }
 }

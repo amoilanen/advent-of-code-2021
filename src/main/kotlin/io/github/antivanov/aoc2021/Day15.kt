@@ -14,30 +14,61 @@ object Day15 {
     2311944581
   """.trimIndent()
 
-  data class Cavern(val riskLevels: Array<Array<Int>>) {
-    private val width = riskLevels[0].size
-    private val height = riskLevels.size
+  data class Grid(val values: Array<Array<Int>>) {
+    val width = values[0].size
+    val height = values.size
 
     override fun toString(): String =
       (0 until height).map { y ->
         (0 until width).map { x ->
-          riskLevels[y][x]
-        }.joinToString("")
+          values[y][x]
+        }.joinToString(" ")
       }.joinToString("\n")
   }
 
-  fun parseInput(input: String): Cavern {
+
+  fun computeLowestPathRisks(riskGrid: Grid): Grid {
+    val lowestPathRisks = (0 until riskGrid.height).map { _ ->
+      IntArray(riskGrid.width).toTypedArray()
+    }.toTypedArray()
+    lowestPathRisks[0][0] = riskGrid.values[0][0]
+    // Compute topmost cells
+    (1 until riskGrid.width).map { x ->
+      lowestPathRisks[0][x] = riskGrid.values[0][x] + lowestPathRisks[0][x - 1]
+    }
+    // Compute leftmost cells
+    (1 until riskGrid.height).map { y ->
+      lowestPathRisks[y][0] = riskGrid.values[y][0] + lowestPathRisks[y - 1][0]
+    }
+    // Compute the rest of the cells
+    (1 until riskGrid.width).forEach { x ->
+      (1 until riskGrid.height).forEach { y ->
+        val pathFromAboveRisk = riskGrid.values[y][x] + lowestPathRisks[y - 1][x]
+        val pathFromLeftRisk = riskGrid.values[y][x] + lowestPathRisks[y][x - 1]
+        val minPathRisk = minOf(pathFromAboveRisk, pathFromLeftRisk)
+        lowestPathRisks[y][x] = minPathRisk
+      }
+    }
+    return Grid(lowestPathRisks)
+  }
+
+  fun parseInput(input: String): Grid {
     val lines = input.trim().split("\n").map { it.trim() }
     val riskLevels = lines.map { line ->
       line.toList().map { symbol ->
         symbol.digitToInt()
       }.toTypedArray()
     }.toTypedArray()
-    return Cavern(riskLevels)
+    return Grid(riskLevels)
+  }
+
+  fun part1(cavern: Grid): Int {
+    val lowestPathRisks = computeLowestPathRisks(cavern)
+    return lowestPathRisks.values[lowestPathRisks.height - 1][lowestPathRisks.width - 1] - lowestPathRisks.values[0][0]
   }
 }
 
 fun main() {
   val cavern = Day15.parseInput(Day15.input)
-  println(cavern)
+  println(Day15.part1(cavern))
 }
