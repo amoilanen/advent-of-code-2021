@@ -15,23 +15,35 @@ object Day15 {
   """.trimIndent()
 
   data class Grid(val values: Array<Array<Int>>) {
+    companion object {
+      const val MaxPossibleValue = 9
+    }
+
     val width = values[0].size
     val height = values.size
+
+    private fun incrementValue(value: Int, increment: Int): Int {
+      val updated = value + increment
+      return if (updated <= MaxPossibleValue)
+        updated
+      else
+        updated % MaxPossibleValue
+    }
 
     private fun replicateHorizontally(times: Int): Grid {
       val replicatedHorizontally = values.map { row ->
         (0 until times).fold(emptyArray<Int>()) { result, increment ->
-          result + row.map { it + increment }
+          result + row.map { incrementValue(it, increment) }
         }
       }.toTypedArray()
       return Grid(replicatedHorizontally)
     }
 
-    fun replicateVertically(times: Int): Grid {
+    private fun replicateVertically(times: Int): Grid {
       val replicatedVertically = (0 until times).fold(values) { result, increment ->
         val allValuesIncremented = (0 until height).map { y ->
           (0 until width).map { x ->
-            values[y][x] + increment
+            incrementValue(values[y][x], increment)
           }.toTypedArray()
         }.toTypedArray()
         result + allValuesIncremented
@@ -49,7 +61,6 @@ object Day15 {
         }.joinToString(" ")
       }.joinToString("\n")
   }
-
 
   fun computeLowestPathRisks(riskGrid: Grid): Grid {
     val lowestPathRisks = (0 until riskGrid.height).map { _ ->
@@ -86,16 +97,27 @@ object Day15 {
     return Grid(riskLevels)
   }
 
+  fun riskOfPathFromLeftTopToRightBottom(pathRisks: Grid): Int =
+    pathRisks.values[pathRisks.height - 1][pathRisks.width - 1] - pathRisks.values[0][0]
+
   fun part1(cavern: Grid): Int {
     val lowestPathRisks = computeLowestPathRisks(cavern)
-    return lowestPathRisks.values[lowestPathRisks.height - 1][lowestPathRisks.width - 1] - lowestPathRisks.values[0][0]
+    return riskOfPathFromLeftTopToRightBottom(lowestPathRisks)
+  }
+
+  fun part2(cavern: Grid): Int {
+    val replicatedCavern = cavern.replicate(5)
+    val lowestPathRisks = computeLowestPathRisks(replicatedCavern)
+    return riskOfPathFromLeftTopToRightBottom(lowestPathRisks)
   }
 }
 
 fun main() {
   val cavern = Day15.parseInput(Day15.input)
   println(Day15.part1(cavern))
+  println(Day15.part2(cavern))
 
+  /*
   println()
   val smallTestGrid = Day15.Grid(arrayOf(
     arrayOf(1, 2),
@@ -106,4 +128,5 @@ fun main() {
   println()
   val replicated = smallTestGrid.replicate(5)
   println(replicated)
+  */
 }
