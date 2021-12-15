@@ -32,7 +32,7 @@ object Day15 {
 
     private fun replicateHorizontally(times: Int): Grid {
       val replicatedHorizontally = values.map { row ->
-        (0 until times).fold(emptyArray<Int>()) { result, increment ->
+        (1 until times).fold(row) { result, increment ->
           result + row.map { incrementValue(it, increment) }
         }
       }.toTypedArray()
@@ -40,7 +40,7 @@ object Day15 {
     }
 
     private fun replicateVertically(times: Int): Grid {
-      val replicatedVertically = (0 until times).fold(values) { result, increment ->
+      val replicatedVertically = (1 until times).fold(values) { result, increment ->
         val allValuesIncremented = (0 until height).map { y ->
           (0 until width).map { x ->
             incrementValue(values[y][x], increment)
@@ -116,17 +116,4 @@ fun main() {
   val cavern = Day15.parseInput(Day15.input)
   println(Day15.part1(cavern))
   println(Day15.part2(cavern))
-
-  /*
-  println()
-  val smallTestGrid = Day15.Grid(arrayOf(
-    arrayOf(1, 2),
-    arrayOf(3, 4)
-  ))
-  println(smallTestGrid)
-
-  println()
-  val replicated = smallTestGrid.replicate(5)
-  println(replicated)
-  */
 }
