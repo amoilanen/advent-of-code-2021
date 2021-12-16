@@ -1,5 +1,9 @@
 package io.github.antivanov.aoc2021
 
+import arrow.core.None
+import arrow.core.Some
+import arrow.core.flattenOption
+
 object Day15 {
   val input = """
     1163751742
@@ -13,6 +17,8 @@ object Day15 {
     1293138521
     2311944581
   """.trimIndent()
+
+  data class Point(val x: Int, val y: Int)
 
   data class Grid(val values: Array<Array<Int>>) {
     companion object {
@@ -54,6 +60,14 @@ object Day15 {
     fun replicate(times: Int): Grid  =
       replicateHorizontally(times).replicateVertically(times)
 
+    fun getAdjacentPoints(p: Point): List<Point> {
+      val top = if (p.y > 0) Some(p.copy(y = p.y - 1)) else None
+      val bottom = if (p.y < height - 1) Some(p.copy(y = p.y + 1)) else None
+      val left = if (p.x > 0) Some(p.copy(x = p.x - 1)) else None
+      val right = if (p.x < width - 1) Some(p.copy(x = p.x + 1)) else None
+      return listOf(top, bottom, left, right).flattenOption()
+    }
+
     override fun toString(): String =
       (0 until height).map { y ->
         (0 until width).map { x ->
@@ -64,24 +78,26 @@ object Day15 {
 
   fun computeLowestPathRisks(riskGrid: Grid): Grid {
     val lowestPathRisks = (0 until riskGrid.height).map { _ ->
-      IntArray(riskGrid.width).toTypedArray()
+      IntArray(riskGrid.width).map { _ -> Int.MAX_VALUE - Grid.MaxPossibleValue }.toTypedArray()
     }.toTypedArray()
+
     lowestPathRisks[0][0] = riskGrid.values[0][0]
-    // Compute topmost cells
-    (1 until riskGrid.width).map { x ->
-      lowestPathRisks[0][x] = riskGrid.values[0][x] + lowestPathRisks[0][x - 1]
-    }
-    // Compute leftmost cells
-    (1 until riskGrid.height).map { y ->
-      lowestPathRisks[y][0] = riskGrid.values[y][0] + lowestPathRisks[y - 1][0]
-    }
-    // Compute the rest of the cells
-    (1 until riskGrid.width).forEach { x ->
-      (1 until riskGrid.height).forEach { y ->
-        val pathFromAboveRisk = riskGrid.values[y][x] + lowestPathRisks[y - 1][x]
-        val pathFromLeftRisk = riskGrid.values[y][x] + lowestPathRisks[y][x - 1]
-        val minPathRisk = minOf(pathFromAboveRisk, pathFromLeftRisk)
-        lowestPathRisks[y][x] = minPathRisk
+    var hasOptimalRiskChanged = true
+    while (hasOptimalRiskChanged) {
+      hasOptimalRiskChanged = false
+      (0 until riskGrid.height).forEach { y ->
+        (0 until riskGrid.width).forEach { x ->
+          val adjacentPoints = riskGrid.getAdjacentPoints(Point(x, y))
+          val currentRiskValue = lowestPathRisks[y][x]
+          val possibleRiskUpdates = adjacentPoints.map {
+            riskGrid.values[y][x] + lowestPathRisks[it.y][it.x]
+          }
+          val bestRiskUpdate = possibleRiskUpdates.minOrNull()!!
+          if (bestRiskUpdate < currentRiskValue) {
+            hasOptimalRiskChanged = true
+            lowestPathRisks[y][x] = bestRiskUpdate
+          }
+        }
       }
     }
     return Grid(lowestPathRisks)
