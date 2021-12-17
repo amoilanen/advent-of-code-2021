@@ -40,11 +40,19 @@ object Day16 {
   private fun paddingLengthToFinishBlock(length: Int, blockLength: Int): Int =
     (blockLength - (length % blockLength)) % blockLength
 
+  private fun isPaddedByZeroesFrom(input: List<Char>, pointer: Int): Boolean {
+    val remainingBits = input.subList(pointer, input.size)
+    return remainingBits.all {
+      it == '0'
+    }
+  }
+
   fun parse(input: String, pointer: Int = 0): Pair<Packet, Int> {
     val binaryRepresentation = input.flatMap { bitEncodingRules[it]!! }
-    println(binaryRepresentation)
-    println(binaryRepresentation.size)
-    return parsePacket(binaryRepresentation, pointer)
+    val (topLevelPacket, pointer) =  parsePacket(binaryRepresentation, pointer)
+    if (!isPaddedByZeroesFrom(binaryRepresentation, pointer))
+      throw IllegalStateException("Non-zero padding bits left after pointer $pointer")
+    return topLevelPacket to binaryRepresentation.size
   }
 
   fun parsePacket(input: List<Char>, pointer: Int): Pair<Packet, Int> {
@@ -61,7 +69,7 @@ object Day16 {
   fun parseOperator(input: List<Char>, version: Int, type: Int, pointer: Int): Pair<Packet, Int> {
     val lengthTypeId = input[pointer]
     return if (lengthTypeId == '0') {
-      val bitLengthOfSubpackets = bitsToInt(input.subList(1, 16))
+      val bitLengthOfSubpackets = bitsToInt(input.subList(pointer + 1, pointer + 16))
       val readUntilPointer = pointer + 16 + bitLengthOfSubpackets
       var nextPointer = pointer + 16
       var childPackets = emptyList<Packet>()
@@ -72,7 +80,7 @@ object Day16 {
       }
       Operator(version, type, childPackets) to nextPointer
     } else {
-      val totalNumberOfDirectChildPackets = bitsToInt(input.subList(1, 12))
+      val totalNumberOfDirectChildPackets = bitsToInt(input.subList(pointer + 1, pointer + 12))
       var nextPointer = pointer + 12
       var childPackets = emptyList<Packet>()
       while (childPackets.size < totalNumberOfDirectChildPackets) {
@@ -89,22 +97,19 @@ object Day16 {
     val numberEnd = (0 until inputAfterPointer.size).find { idx ->
       (idx % Literal.NumberBitsGroupLength == 0) and (inputAfterPointer[idx] == '0')
     }!!
-    val literalLengthWithoutPadding = numberEnd + Literal.NumberBitsGroupLength
+    val literalLength = numberEnd + Literal.NumberBitsGroupLength
 
-    val numberBitIndices = (0 until literalLengthWithoutPadding).filter { it % Literal.NumberBitsGroupLength > 0 }
+    val numberBitIndices = (0 until literalLength).filter { it % Literal.NumberBitsGroupLength > 0 }
     val encodedNumber = bitsToInt(numberBitIndices.map {
       inputAfterPointer[it]
     })
-    val paddingLength = paddingLengthToFinishBlock(SystemBitsPadding + literalLengthWithoutPadding, BitsBlockLength)
-    val literalLengthWithoutSystemBits = literalLengthWithoutPadding + paddingLength
 
-    val updatedPointer = pointer + literalLengthWithoutSystemBits
-    return Literal(version, encodedNumber) to updatedPointer
+    return Literal(version, encodedNumber) to pointer + literalLength
   }
 }
 
 fun main() {
   //TODO: Implement parsing
-  val input = "38006F45291200"
+  val input = "EE00D40C823060"
   println(Day16.parse(input))
 }
