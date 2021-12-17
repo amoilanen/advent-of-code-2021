@@ -1,6 +1,7 @@
 package io.github.antivanov.aoc2021
 
 object Day16 {
+  val input = "A0016C880162017C3686B18A3D4780"
 
   val bitEncodingRules: Map<Char, List<Char>> = hashMapOf(
     '0' to "0000",
@@ -32,13 +33,9 @@ object Day16 {
   data class Operator(val version: Int, val type: Int, val packets: List<Packet>): Packet(version, type)
 
   private val SystemBitsPadding = 6
-  val BitsBlockLength = 4
 
   private fun bitsToInt(bits: List<Char>): Int =
     bits.joinToString("").toInt(2)
-
-  private fun paddingLengthToFinishBlock(length: Int, blockLength: Int): Int =
-    (blockLength - (length % blockLength)) % blockLength
 
   private fun isPaddedByZeroesFrom(input: List<Char>, pointer: Int): Boolean {
     val remainingBits = input.subList(pointer, input.size)
@@ -106,10 +103,21 @@ object Day16 {
 
     return Literal(version, encodedNumber) to pointer + literalLength
   }
+
+  fun versionNumberSumOf(packet: Packet): Int =
+    when (packet) {
+      is Literal -> packet.version
+      is Operator ->
+        packet.version + packet.packets.map(::versionNumberSumOf).sum()
+      else -> 0
+    }
+
+  fun part1(input: String): Int {
+    val (packet, _) = parse(input)
+    return versionNumberSumOf(packet)
+  }
 }
 
 fun main() {
-  //TODO: Implement parsing
-  val input = "EE00D40C823060"
-  println(Day16.parse(input))
+  println(Day16.part1(Day16.input))
 }

@@ -372,4 +372,11 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
   fun test_day15_part2() {
     assertEquals(315, Day15.part2(day15TestInput))
   }
+
+  val day16TestInput = "A0016C880162017C3686B18A3D4780"
+
+  @Test
+  fun test_day16_part1() {
+    assertEquals(31, Day16.part1(day16TestInput))
+  }
 }
