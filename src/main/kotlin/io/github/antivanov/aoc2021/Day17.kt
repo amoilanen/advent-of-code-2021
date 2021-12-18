@@ -62,7 +62,7 @@ object Day17 {
       projectileSnapshotsBefore(leftBottom).map { it.position.y }.maxOrNull()!!
   }
 
-  fun getCandidateSpeedsToHitArea(targetArea: Area): List<Vector> {
+  fun getCandidateVelocitiesToHitArea(targetArea: Area): List<Vector> {
 
     /*
      * If horizontal velocity is larger than the horizontally farthest point of the target area
@@ -76,8 +76,8 @@ object Day17 {
      * Let's call targetArea.bottomRight.x `d`
      *
      * 1. The number of steps to hit the target area can not be larger than `d` because horizontally projectile cannot move
-     * slower than the minimal speed of 1
-     * 2. If `yv` is the vertical speed and target is hit in `s` steps, then after `s` steps the speed should be negative =>
+     * slower than the minimal velocity of 1
+     * 2. If `yv` is the vertical velocity and target is hit in `s` steps, then after `s` steps the velocity should be negative =>
      * `yv - s < 0` => `yv < s`
      * 3. Based on 1. the upper boundary for `yv` is `d`
      */
@@ -98,7 +98,7 @@ object Day17 {
 
   fun velocitiesToHitTarget(targetArea: Area): List<Vector> {
     val initialState = ProjectileState(Vector(0, 0), Vector(0, 0))
-    val candidateVelocities = getCandidateSpeedsToHitArea(targetArea)
+    val candidateVelocities = getCandidateVelocitiesToHitArea(targetArea)
     return candidateVelocities.filter {
       initialState.copy(velocity = it).hitsTarget(targetArea)
     }
