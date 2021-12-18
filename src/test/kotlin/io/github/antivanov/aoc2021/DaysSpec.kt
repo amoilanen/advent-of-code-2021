@@ -384,4 +384,11 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
   fun test_day16_part2() {
     assertEquals(54, Day16.part2(day16TestInput))
   }
+
+  val day17TestInput = Day17.parseInput("target area: x=20..30, y=-10..-5")
+
+  @Test
+  fun test_day17_part1() {
+    assertEquals(45, Day17.part1(day17TestInput))
+  }
 }
