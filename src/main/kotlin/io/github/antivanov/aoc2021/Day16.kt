@@ -172,8 +172,14 @@ object Day16 {
     val (packet, _) = parse(input)
     return versionNumberSumOf(packet)
   }
+
+  fun part2(input: String): Long {
+    val (packet, _) = parse(input)
+    return packet.evaluate()
+  }
 }
 
 fun main() {
   println(Day16.part1(Day16.input))
+  println(Day16.part2(Day16.input))
 }
