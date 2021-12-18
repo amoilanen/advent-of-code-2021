@@ -53,59 +53,71 @@ object Day17 {
       return states
     }
 
-    fun hitsTargetAreaAndMaximumHeight(targetArea: Area): Pair<Boolean, Int> {
+    fun hitsTarget(targetArea: Area): Boolean {
       val snapshots = projectileSnapshotsBefore(targetArea.bottomRight)
-      val hitsTargetArea = snapshots.filter { it.isWithinArea(targetArea) }.isNotEmpty()
-      val maximumHeight = snapshots.map { it.position.y }.maxOrNull()!!
-      return hitsTargetArea to maximumHeight
+      return snapshots.any { it.isWithinArea(targetArea) }
     }
+
+    fun maximumHeightBefore(leftBottom: Vector): Int  =
+      projectileSnapshotsBefore(leftBottom).map { it.position.y }.maxOrNull()!!
   }
 
   fun getCandidateSpeedsToHitArea(targetArea: Area): List<Vector> {
 
     /*
      * If horizontal velocity is larger than the horizontally farthest point of the target area
-     * the projectile will immediately overshoot the target.
+     * the target will be immediately overshot.
      */
     val maxXVelocity = targetArea.bottomRight.x
 
     /*
      * Reasoning to get the upper boundary for yv - velocity along the yt axis:
      *
-     * Let's call targetArea.topLeft.x `d`
+     * Let's call targetArea.bottomRight.x `d`
      *
      * 1. The number of steps to hit the target area can not be larger than `d` because horizontally projectile cannot move
      * slower than the minimal speed of 1
-     * 2. If `yv` is the vertical speed the vertical distance covered in a number of steps `s` after which the target is hit can be computed as
-     * `yv + (yv - 1) + (yv - 2) + ... + (yv - s) = yv * (s + 1) - s * (s + 1) / 2`
-     * 3. Since after `s` steps the projectile hits the target it then has the negative coordinate on the `y` axis:
-     * `yv * (s + 1) - s * (s + 1) / 2 < 0` => `yv < s / 2`
-     * 4. Based on 1. the upper boundary for `yv` is `d / 2`
+     * 2. If `yv` is the vertical speed and target is hit in `s` steps, then after `s` steps the speed should be negative =>
+     * `yv - s < 0` => `yv < s`
+     * 3. Based on 1. the upper boundary for `yv` is `d`
      */
-    val maxYVelocity = targetArea.topLeft.x / 2
+    val maxYVelocity = targetArea.bottomRight.x
+
+    /*
+     * If vertical velocity is lower than the coordinate of the vertically farthest point of the target area,
+     * the target will be immediately overshot.
+     */
+    val minYVelocity = targetArea.bottomRight.y
 
     return (0..maxXVelocity).flatMap { vx ->
-      (0..maxYVelocity).map { vy ->
+      (minYVelocity..maxYVelocity).map { vy ->
         Vector(vx, vy)
       }
     }
   }
 
-  fun part1(targetArea: Area): Int {
+  fun velocitiesToHitTarget(targetArea: Area): List<Vector> {
     val initialState = ProjectileState(Vector(0, 0), Vector(0, 0))
     val candidateVelocities = getCandidateSpeedsToHitArea(targetArea)
-
-    val hitsAndMaxHeights = candidateVelocities.map {
-      initialState.copy(velocity = it).hitsTargetAreaAndMaximumHeight(targetArea)
-    }.filter {
-      it.first
+    return candidateVelocities.filter {
+      initialState.copy(velocity = it).hitsTarget(targetArea)
     }
-    return hitsAndMaxHeights.map { it.second }.maxOrNull()!!
   }
+
+  fun part1(targetArea: Area): Int {
+    val initialState = ProjectileState(Vector(0, 0), Vector(0, 0))
+    val maxHeightsWhenHittingTargets = velocitiesToHitTarget(targetArea).map {
+      initialState.copy(velocity = it).maximumHeightBefore(targetArea.bottomRight)
+    }
+    return maxHeightsWhenHittingTargets.maxOrNull()!!
+  }
+
+  fun part2(targetArea: Area): Int =
+    velocitiesToHitTarget(targetArea).size
 }
 
 fun main() {
   val targetArea = Day17.parseInput(Day17.input)
-  println(targetArea)
   println(Day17.part1(targetArea))
+  println(Day17.part2(targetArea))
 }
