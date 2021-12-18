@@ -126,4 +126,89 @@ class Day16Spec {
     assertEquals(parsed, expected to lastPointerPosition)
     assertEquals(versionNumberSumOf(parsed.first), 31)
   }
+
+  @Test
+  fun test_evaluate_operator_sum() {
+    val input = "C200B40A82"
+    val (operator, _) = parse(input)
+    assertEquals(operator, Operator(6, 0, packets = listOf(
+      Literal(version = 6, value = 1),
+      Literal(version = 2, value = 2)
+    )))
+    assertEquals(operator.evaluate(), 3)
+  }
+
+  @Test
+  fun test_evaluate_operator_product() {
+    val input = "04005AC33890"
+    val (operator, _) = parse(input)
+    assertEquals(operator, Operator(0, 1, packets = listOf(
+      Literal(version = 5, value = 6),
+      Literal(version = 3, value = 9)
+    )))
+    assertEquals(operator.evaluate(), 54)
+  }
+
+  @Test
+  fun test_evaluate_operator_min() {
+    val input = "880086C3E88112"
+    val (operator, _) = parse(input)
+    assertEquals(operator, Operator(4, 2, packets = listOf(
+      Literal(version = 5, value = 7),
+      Literal(version = 6, value = 8),
+      Literal(version = 0, value = 9)
+    )))
+    assertEquals(operator.evaluate(), 7)
+  }
+
+  @Test
+  fun test_evaluate_operator_max() {
+    val input = "CE00C43D881120"
+    val (operator, _) = parse(input)
+    assertEquals(operator, Operator(6, 3, packets = listOf(
+      Literal(version = 0, value = 7),
+      Literal(version = 5, value = 8),
+      Literal(version = 0, value = 9)
+    )))
+    assertEquals(operator.evaluate(), 9)
+  }
+
+  @Test
+  fun test_evaluate_operator_greater_than() {
+    val input = "F600BC2D8F"
+    val (operator, _) = parse(input)
+    assertEquals(operator, Operator(7, 5, packets = listOf(
+      Literal(version = 7, value = 5),
+      Literal(version = 5, value = 15)
+    )))
+    assertEquals(operator.evaluate(), 0)
+  }
+
+  @Test
+  fun test_evaluate_operator_less_than() {
+    val input = "D8005AC2A8F0"
+    val (operator, _) = parse(input)
+    assertEquals(operator, Operator(6, 6, packets = listOf(
+      Literal(version = 5, value = 5),
+      Literal(version = 2, value = 15)
+    )))
+    assertEquals(operator.evaluate(), 1)
+  }
+
+  @Test
+  fun test_evaluate_operator_equal_to() {
+    val input = "9C0141080250320F1802104A08"
+    val (operator, _) = parse(input)
+    assertEquals(operator, Operator(4, 7, packets = listOf(
+      Operator(2, 0, packets = listOf(
+        Literal(version = 2, value = 1),
+        Literal(version = 4, value = 3)
+      )),
+      Operator(6, 1, packets = listOf(
+        Literal(version = 0, value = 2),
+        Literal(version = 2, value = 2)
+      ))
+    )))
+    assertEquals(operator.evaluate(), 1)
+  }
 }
