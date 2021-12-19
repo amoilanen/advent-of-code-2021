@@ -60,7 +60,7 @@ class Day18Spec {
   fun test_reduce_once_1() {
     val input = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
     val parsed = parse(input).addLinksBack()
-    val reducedOnce = parsed.reduceOnce().toString()
+    val reducedOnce = parsed.reduceOnce().second.toString()
     val expected = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"
     assertEquals(expected, reducedOnce)
   }
