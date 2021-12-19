@@ -14,17 +14,28 @@ object Day18 {
     }
 
     abstract fun allNumbers(): List<Element>
+
+    abstract fun reduceOnce(): Element
   }
 
   data class Pair(var left: Element, var right: Element, override var parent: Element? = null): Element(listOf(left, right), parent) {
     override fun allNumbers(): List<Element> =
       left.allNumbers() + right.allNumbers()
+
+    override fun reduceOnce(): Element {
+      TODO("Not yet implemented")
+    }
+
     override fun toString(): String =
       "[$left, $right]"
   }
   data class Number(var value: Int, override var parent: Element? = null): Element(emptyList(), parent) {
     override fun allNumbers(): List<Element> =
       listOf(this)
+
+    override fun reduceOnce(): Element {
+      TODO("Not yet implemented")
+    }
 
     override fun toString(): String =
       value.toString()
