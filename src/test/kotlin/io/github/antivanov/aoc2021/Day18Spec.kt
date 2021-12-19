@@ -3,7 +3,6 @@ package io.github.antivanov.aoc2021
 import io.github.antivanov.aoc2021.Day18.parse
 import io.github.antivanov.aoc2021.Day18.Pair
 import io.github.antivanov.aoc2021.Day18.Number
-import kotlin.math.exp
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
