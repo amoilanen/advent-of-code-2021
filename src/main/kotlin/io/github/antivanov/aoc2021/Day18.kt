@@ -5,6 +5,15 @@ import kotlin.Pair as Tuple
 
 object Day18 {
 
+  fun updateChildTo(child: Element, newChild: Element): Unit {
+    val parent = child.parent
+    newChild.parent = parent
+    if (parent?.left == child)
+      parent?.left = newChild
+    else
+      parent?.right = newChild
+  }
+
   abstract class Element(var children: List<Element>, open var parent: Pair?) {
 
     fun nestednessLevel(): Int {
@@ -21,17 +30,13 @@ object Day18 {
 
     abstract fun allNumbers(): List<Number>
 
+    val NumberValueToSplitAfter = 10
     val NestednessLevelToExplode = 5
 
     private fun tryExplode(numbers: List<Number>): Tuple<Boolean, Element> {
 
-      fun explodePair(pair: Pair) {
-        val explodingPairParent = pair.parent
-        if (explodingPairParent?.left == pair)
-          explodingPairParent?.left = Number(0, explodingPairParent)
-        else
-          explodingPairParent?.right = Number(0, explodingPairParent)
-      }
+      fun explodePair(pair: Pair) =
+        updateChildTo(pair, Number(0))
 
       fun updateAdjacentNumbers(explodingLeftIndex: Int, explodingRightIndex: Int) {
         val firstRegularNumberToLeft = if (explodingLeftIndex > 0)
@@ -50,7 +55,6 @@ object Day18 {
           firstRegularNumberToRight.value += explodingPairRight.value
       }
 
-      val numbers = allNumbers()
       val nestednessLevels = numbers.map { it.nestednessLevel() }.zip(0 until numbers.size)
       val indicesOfDeepPairs = nestednessLevels.filter {
         it.first == NestednessLevelToExplode
@@ -58,27 +62,42 @@ object Day18 {
         it.second
       }
 
-      var hasChanged = false
       if (indicesOfDeepPairs.isNotEmpty()) {
-        hasChanged = true
         val explodingLeftIndex = indicesOfDeepPairs[0]
         val explodingRightIndex = indicesOfDeepPairs[1]
         explodePair(numbers[explodingLeftIndex].parent!!)
         updateAdjacentNumbers(explodingLeftIndex, explodingRightIndex)
       }
-      return hasChanged to this
+      return indicesOfDeepPairs.isNotEmpty() to this
+    }
+
+    private fun trySplitting(numbers: List<Number>): Tuple<Boolean, Element> {
+      val numbersToSplit = numbers.zip(0 until numbers.size).filter {
+        it.first.value > NumberValueToSplitAfter
+      }
+      if (numbersToSplit.isNotEmpty()) {
+        val firstNumberToSplit = numbersToSplit.first()
+        val numberBeingSplit = numbers[firstNumberToSplit.second]
+        val left = numberBeingSplit.value / 2
+        val right = numberBeingSplit.value - left
+        val splitPair = Pair(
+          Number(left),
+          Number(right)
+        ).addLinksBack()
+        updateChildTo(numberBeingSplit, splitPair)
+      }
+      return numbersToSplit.isNotEmpty() to this
     }
 
     fun reduceOnce(): Tuple<Boolean, Element> {
       val numbers = allNumbers()
-      val (hasExploded, updatedElement) = tryExplode(numbers)
+      val (hasExploded, elementAfterTryingToExplode) = tryExplode(numbers)
 
-      if (!hasExploded) {
-        //TODO: Try splitting
-      }
-      val hasChanged = hasExploded
-
-      return hasChanged to this
+      return if (!hasExploded) {
+        val (hasSplitted, elementAfterTryingToSplit) = trySplitting(numbers)
+        hasSplitted to elementAfterTryingToSplit
+      } else
+        hasExploded to elementAfterTryingToExplode
     }
   }
 
@@ -111,11 +130,14 @@ object Day18 {
       value.toString()
   }
 
+  private fun isDigit(symbol: Char): Boolean =
+    "0123456789".contains(symbol)
+
   fun parse(input: String): Element {
     var pointer = 0
     var stack = ArrayDeque<Element>()
     while (pointer != input.length) {
-      val nextSymbol = input[pointer]
+      var nextSymbol = input[pointer]
       if (nextSymbol == '[' || nextSymbol == ',') {
         pointer += 1
       } else if (nextSymbol == ']') {
@@ -124,8 +146,14 @@ object Day18 {
         stack.push(Pair(left, right))
         pointer += 1
       } else {
-        stack.push(Number(nextSymbol.toString().toInt()))
-        pointer += 1
+        var digitsRead = emptyList<Char>()
+        while (isDigit(nextSymbol)) {
+          digitsRead += nextSymbol
+          pointer += 1
+          nextSymbol = input[pointer]
+        }
+        val readNumber = digitsRead.joinToString("").toInt()
+        stack.push(Number(readNumber))
       }
     }
     return stack.pop()
