@@ -29,6 +29,9 @@ object Day18 {
 
   abstract class Element(var children: List<Element>, open var parent: Pair?) {
 
+    fun clone(): Element =
+      parseElement(this.toString())
+
     fun add(other: Element): Element {
       val result = Pair(this, other)
       this.parent = result
@@ -218,10 +221,25 @@ object Day18 {
   }
 
   fun part1(numbers: List<Element>): Int =
-    sum(numbers).magnitude()
+    sum(numbers.map { it.clone() }).magnitude()
+
+  fun part2(numbers: List<Element>): Int {
+    val numberIndices = (0 until numbers.size).flatMap { firstIndex ->
+      (0 until numbers.size).map { secondIndex ->
+        firstIndex to secondIndex
+      }
+    }.filter { it.first != it.second }
+    val magnitudes = numberIndices.map {
+      val left = numbers[it.first].clone()
+      val right = numbers[it.second].clone()
+      left.add(right)
+    }.map { it.magnitude() }
+    return magnitudes.maxOrNull()!!
+  }
 }
 
 fun main() {
   val numbers = Day18.parse(Day18.input)
   println(Day18.part1(numbers))
+  println(Day18.part2(numbers))
 }

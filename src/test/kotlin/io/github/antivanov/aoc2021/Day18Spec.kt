@@ -154,11 +154,21 @@ class Day18Spec {
   }
 
   @Test
-  fun test_addition() {
+  fun test_addition_1() {
     val x = parseElement("[[[[4,3],4],4],[7,[[8,4],9]]]")
     val y = parseElement("[1,1]")
     val sum = x.add(y)
     val expected = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+    assertEquals(expected, sum.toString())
+  }
+
+
+  @Test
+  fun test_addition_2() {
+    val x = parseElement("[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]")
+    val y = parseElement("[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]")
+    val sum = x.add(y)
+    val expected = "[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]"
     assertEquals(expected, sum.toString())
   }
 
@@ -224,6 +234,17 @@ class Day18Spec {
   }
 
   @Test
+  fun test_sum_magnitude() {
+    val input = """
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+    """.trimIndent()
+    val numbers = parse(input)
+    val expected = 3993
+    assertEquals(expected, sum(numbers).magnitude())
+  }
+
+  @Test
   fun test_magnitude_1() {
     val number = parseElement("[[1,2],[[3,4],5]]")
     assertEquals(143, number.magnitude())
@@ -257,5 +278,11 @@ class Day18Spec {
   fun test_magnitude_6() {
     val number = parseElement("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
     assertEquals(3488, number.magnitude())
+  }
+
+  @Test
+  fun test_magnitude_7() {
+    val number = parseElement("[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]")
+    assertEquals(3993, number.magnitude())
   }
 }
