@@ -5,6 +5,13 @@ import kotlin.Pair as Tuple
 
 object Day18 {
 
+  val input = """
+    [1,1]
+    [2,2]
+    [3,3]
+    [4,4]
+  """.trimIndent()
+
   fun updateChildTo(child: Element, newChild: Element): Unit {
     val parent = child.parent
     newChild.parent = parent
@@ -80,7 +87,7 @@ object Day18 {
 
     private fun trySplitting(numbers: List<Number>): Tuple<Boolean, Element> {
       val numbersToSplit = numbers.zip(0 until numbers.size).filter {
-        it.first.value > NumberValueToSplitAfter
+        it.first.value >= NumberValueToSplitAfter
       }
       if (numbersToSplit.isNotEmpty()) {
         val firstNumberToSplit = numbersToSplit.first()
@@ -150,7 +157,7 @@ object Day18 {
   private fun isDigit(symbol: Char): Boolean =
     "0123456789".contains(symbol)
 
-  fun parseWithoutBackLinks(input: String): Element {
+  fun parseElementWithoutBackLinks(input: String): Element {
     var pointer = 0
     var stack = ArrayDeque<Element>()
     while (pointer != input.length) {
@@ -176,13 +183,30 @@ object Day18 {
     return stack.pop()
   }
 
-  fun parse(input: String): Element =
-    parseWithoutBackLinks(input).addLinksBack()
+  fun parseElement(input: String): Element =
+    parseElementWithoutBackLinks(input).addLinksBack()
+
+  fun sum(numbers: List<Element>): Element {
+    val first = numbers.first()
+    val rest = numbers.subList(1, numbers.size)
+    return rest.fold(first) { acc, next ->
+      acc.add(next)
+    }
+  }
+
+  fun parse(input: String): List<Element> {
+    val lines = input.split("\n").map {
+      it.trim()
+    }
+    return lines.map {
+      parseElement(it)
+    }
+  }
 }
 
 fun main() {
   val input = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
-  val parsed = Day18.parse(input).addLinksBack()
+  val parsed = Day18.parseElement(input).addLinksBack()
   println(parsed)
   val allElements = parsed.allNumbers()
   println(allElements)
