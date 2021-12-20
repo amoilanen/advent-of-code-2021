@@ -16,6 +16,13 @@ object Day18 {
 
   abstract class Element(var children: List<Element>, open var parent: Pair?) {
 
+    fun add(other: Element): Element {
+      val result = Pair(this, other)
+      this.parent = result
+      other.parent = result
+      return result.reduce()
+    }
+
     fun nestednessLevel(): Int {
       var nestedness = 0
       var node = parent
@@ -99,6 +106,16 @@ object Day18 {
       } else
         hasExploded to elementAfterTryingToExplode
     }
+
+    fun reduce(): Element {
+      var (hasBeenReduced, reduced) = this.reduceOnce()
+      while (hasBeenReduced) {
+        val reductionResult = this.reduceOnce()
+        hasBeenReduced = reductionResult.first
+        reduced = reductionResult.second
+      }
+      return reduced
+    }
   }
 
   data class Pair(var left: Element, var right: Element, override var parent: Pair? = null): Element(listOf(left, right), parent) {
@@ -133,7 +150,7 @@ object Day18 {
   private fun isDigit(symbol: Char): Boolean =
     "0123456789".contains(symbol)
 
-  fun parse(input: String): Element {
+  fun parseWithoutBackLinks(input: String): Element {
     var pointer = 0
     var stack = ArrayDeque<Element>()
     while (pointer != input.length) {
@@ -158,6 +175,9 @@ object Day18 {
     }
     return stack.pop()
   }
+
+  fun parse(input: String): Element =
+    parseWithoutBackLinks(input).addLinksBack()
 }
 
 fun main() {

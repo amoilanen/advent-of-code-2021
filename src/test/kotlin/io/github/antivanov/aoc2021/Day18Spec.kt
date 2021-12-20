@@ -1,9 +1,9 @@
 package io.github.antivanov.aoc2021
 
 import io.github.antivanov.aoc2021.Day18.parse
+import io.github.antivanov.aoc2021.Day18.parseWithoutBackLinks
 import io.github.antivanov.aoc2021.Day18.Pair
 import io.github.antivanov.aoc2021.Day18.Number
-import kotlin.math.exp
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -31,7 +31,7 @@ class Day18Spec {
             Pair(
               Number(value=3),
               Number(value=2))))))
-    assertEquals(expected, parse(input))
+    assertEquals(expected, parseWithoutBackLinks(input))
   }
 
   @Test
@@ -41,7 +41,7 @@ class Day18Spec {
       Number(1),
       Number(2)
     )
-    assertEquals(expected, parse(input))
+    assertEquals(expected, parseWithoutBackLinks(input))
   }
 
   @Test
@@ -54,7 +54,7 @@ class Day18Spec {
         Number(7)
       )
     )
-    assertEquals(expected, parse(input))
+    assertEquals(expected, parseWithoutBackLinks(input))
   }
 
   @Test
@@ -82,12 +82,17 @@ class Day18Spec {
       Pair(
         Number(1),
         Number(1)))
-    assertEquals(parsedExpected, parse(input))
+    assertEquals(parsedExpected, parseWithoutBackLinks(input))
   }
 
   private fun reduceOnce(number: String): String {
-    val parsed = parse(number).addLinksBack()
+    val parsed = parse(number)
     return parsed.reduceOnce().second.toString()
+  }
+
+  private fun reduce(number: String): String {
+    val parsed = parse(number)
+    return parsed.reduce().toString()
   }
 
   @Test
@@ -137,5 +142,21 @@ class Day18Spec {
     val input = "[[[[0,7],4],[[7,8],[0,13]]],[1,1]]"
     val expected = "[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"
     assertEquals(expected, reduceOnce(input))
+  }
+
+  @Test
+  fun test_reduce_fully() {
+    val input = "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
+    val expected = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+    assertEquals(expected, reduce(input))
+  }
+
+  @Test
+  fun test_addition() {
+    val x = parse("[[[[4,3],4],4],[7,[[8,4],9]]]")
+    val y = parse("[1,1]")
+    val sum = x.add(y)
+    val expected = "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+    assertEquals(expected, sum.toString())
   }
 }
