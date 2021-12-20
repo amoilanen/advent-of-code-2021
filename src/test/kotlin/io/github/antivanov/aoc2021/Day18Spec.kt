@@ -22,17 +22,17 @@ class Day18Spec {
           Pair(
             Number(1),
               Pair(
-                Number(value=7),
-                Number(value=3))))),
+                Number(7),
+                Number(3))))),
       Pair(
-        Number(value=6),
+        Number(6),
         Pair(
-          Number(value=5),
+          Number(5),
           Pair(
-            Number(value=4),
+            Number(4),
             Pair(
-              Number(value=3),
-              Number(value=2))))))
+              Number(3),
+              Number(2))))))
     assertEquals(expected, parseElementWithoutBackLinks(input))
   }
 
@@ -221,5 +221,41 @@ class Day18Spec {
     val numbers = parse(input)
     val expected = "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"
     assertEquals(expected, sum(numbers).toString())
+  }
+
+  @Test
+  fun test_magnitude_1() {
+    val number = parseElement("[[1,2],[[3,4],5]]")
+    assertEquals(143, number.magnitude())
+  }
+
+  @Test
+  fun test_magnitude_2() {
+    val number = parseElement("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")
+    assertEquals(1384, number.magnitude())
+  }
+
+  @Test
+  fun test_magnitude_3() {
+    val number = parseElement("[[[[1,1],[2,2]],[3,3]],[4,4]]")
+    assertEquals(445, number.magnitude())
+  }
+
+  @Test
+  fun test_magnitude_4() {
+    val number = parseElement("[[[[3,0],[5,3]],[4,4]],[5,5]]")
+    assertEquals(791, number.magnitude())
+  }
+
+  @Test
+  fun test_magnitude_5() {
+    val number = parseElement("[[[[5,0],[7,4]],[5,5]],[6,6]]")
+    assertEquals(1137, number.magnitude())
+  }
+
+  @Test
+  fun test_magnitude_6() {
+    val number = parseElement("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")
+    assertEquals(3488, number.magnitude())
   }
 }

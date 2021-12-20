@@ -6,10 +6,16 @@ import kotlin.Pair as Tuple
 object Day18 {
 
   val input = """
-    [1,1]
-    [2,2]
-    [3,3]
-    [4,4]
+[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+[[[5,[2,8]],4],[5,[[9,9],0]]]
+[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+[[[[5,4],[7,7]],8],[[8,3],8]]
+[[9,3],[[9,9],[6,[4,9]]]]
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]
   """.trimIndent()
 
   fun updateChildTo(child: Element, newChild: Element): Unit {
@@ -39,6 +45,8 @@ object Day18 {
       }
       return nestedness
     }
+
+    abstract fun magnitude(): Int
 
     abstract fun addLinksBack(): Element
 
@@ -127,6 +135,9 @@ object Day18 {
 
   data class Pair(var left: Element, var right: Element, override var parent: Pair? = null): Element(listOf(left, right), parent) {
 
+    override fun magnitude(): Int =
+      3 * left.magnitude() + 2 * right.magnitude()
+
     override fun addLinksBack(): Element {
       children.forEach {
         it.parent = this
@@ -143,6 +154,9 @@ object Day18 {
   }
 
   data class Number(var value: Int, override var parent: Pair? = null): Element(emptyList(), parent) {
+
+    override fun magnitude(): Int =
+      value
 
     override fun addLinksBack(): Element =
       this
@@ -202,15 +216,12 @@ object Day18 {
       parseElement(it)
     }
   }
+
+  fun part1(numbers: List<Element>): Int =
+    sum(numbers).magnitude()
 }
 
 fun main() {
-  val input = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"
-  val parsed = Day18.parseElement(input).addLinksBack()
-  println(parsed)
-  val allElements = parsed.allNumbers()
-  println(allElements)
-
-  val reducedOnce = parsed.reduceOnce().toString()
-  println(reducedOnce)
+  val numbers = Day18.parse(Day18.input)
+  println(Day18.part1(numbers))
 }
