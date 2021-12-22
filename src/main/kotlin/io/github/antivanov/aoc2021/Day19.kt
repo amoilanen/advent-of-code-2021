@@ -143,24 +143,6 @@ object Day19 {
     30,-46,-14
   """.trimIndent()
 
-  fun <T> tuplesOfSize(size: Int, elements: List<T>): List<List<T>> {
-    fun <T> buildPartialTuplesOfSize(size: Int, fromElements: List<T>, partiallyBuiltGroups: List<List<T>>): List<List<T>> {
-      return if (size == 0)
-        partiallyBuiltGroups
-      else {
-        val groupsWithDifferentNextElementSelected = fromElements.map { nextElement ->
-          val newPartiallyBuiltGroups = partiallyBuiltGroups.map {
-            it + nextElement
-          }
-          val remainingElements = fromElements.filter { it != nextElement }
-          buildPartialTuplesOfSize(size - 1, remainingElements, newPartiallyBuiltGroups)
-        }
-        return groupsWithDifferentNextElementSelected.flatten()
-      }
-    }
-    return buildPartialTuplesOfSize(size, elements, emptyList())
-  }
-
   data class Point(val x: Int, val y: Int, val z: Int) {
     fun distanceTo(other: Point): Int =
       listOf(x - other.x, y - other.y, z - other.z).map {
@@ -202,7 +184,4 @@ object Day19 {
 fun main() {
   val parsed = Day19.parseInput(Day19.input)
   println(parsed)
-  val elements = listOf(1, 2, 3, 4, 5)
-  val tuples = Day19.tuplesOfSize(2, elements)
-  println(tuples)
 }
