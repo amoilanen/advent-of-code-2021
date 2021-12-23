@@ -1,6 +1,9 @@
 package io.github.antivanov.aoc2021
 
 import io.github.antivanov.aoc2021.util.ParsingUtils
+import io.github.antivanov.aoc2021.util.HashFunctions.listOfNumbersHash
+import io.github.antivanov.aoc2021.util.Tuples.setsOfSize
+import kotlin.math.sign
 
 object Day19 {
 
@@ -146,33 +149,71 @@ object Day19 {
   data class Point(val x: Int, val y: Int, val z: Int) {
     fun distanceTo(other: Point): Int =
       listOf(x - other.x, y - other.y, z - other.z).map {
-        it * it
+        Math.abs(it)
       }.sum()
+
+    override fun toString(): String =
+      "($x, $y, $z)"
   }
 
-  data class PointGroup(val points: List<Point>, val groupSignature: Long = 0, val signaturesToPoints: Map<Long, Point> = hashMapOf())
+  data class PointGroup(val points: Set<Point>) {
+    private fun computeSignaturesToPoints(points: Set<Point>): Map<Long, Point> {
+      val pointDistances = setsOfSize(2, points).map { twoPoints ->
+        val (first, second) = twoPoints.toList()
+        first to first.distanceTo(second)
+      }
+      val pointSignatures = pointDistances.groupBy {
+        it.first
+      }.mapValues {
+        listOfNumbersHash(it.value.map { pointAndDistance ->
+          pointAndDistance.second.toLong()
+        })
+      }
+      return pointSignatures.toList().map {
+        it.second to it.first
+      }.toMap()
+    }
+    val signaturesToPoints: Map<Long, Point> = computeSignaturesToPoints(points)
+    val groupSignature: Long = listOfNumbersHash(signaturesToPoints.toList().map { it.first }.sorted())
 
-  data class Scanner(val beacons: List<Point>) {
+    override fun hashCode(): Int =
+      groupSignature.toInt()
 
-    // If there are 12 common points, so there are also 5 common points
-    fun possiblePointGroupsOf(groupSize: Int): List<PointGroup> {
-      return emptyList()
+    override fun equals(other: Any?): Boolean =
+      other is PointGroup && groupSignature == other.groupSignature
+  }
+
+  val FingerprintPointGroupSize = 3
+
+  data class Scanner(val id: Int, val beacons: List<Point>) {
+
+    fun pointGroupsOf(groupSize: Int): Set<PointGroup> =
+      setsOfSize(groupSize, beacons.toSet()).map {
+        PointGroup(it)
+      }.toSet()
+
+    override fun toString(): String {
+      val beacons = beacons.joinToString("\n")
+      return """
+Scanner($id,
+$beacons
+)""".trimIndent()
     }
   }
 
   fun parseInput(input: String): List<Scanner> {
     val lines = input.split("\n").map { it.trim() }
     val scannerInputs = ParsingUtils.splitByElement(lines, "")
-    return scannerInputs.map {
-      parseScanner(it)
+    return scannerInputs.indices.zip(scannerInputs).map {
+      parseScanner(it.first, it.second)
     }
   }
 
-  private fun parseScanner(input: List<String>): Scanner {
+  private fun parseScanner(id: Int, input: List<String>): Scanner {
     val beacons = input.drop(1).map {
       parseBeacon(it)
     }
-    return Scanner(beacons)
+    return Scanner(id, beacons)
   }
 
   private fun parseBeacon(input: String): Point {
@@ -183,5 +224,39 @@ object Day19 {
 
 fun main() {
   val parsed = Day19.parseInput(Day19.input)
-  println(parsed)
+  val (firstScanner, secondScanner, thirdScanner, fourthScanner, fifthScanner) = parsed
+  println()
+  println(firstScanner)
+  println()
+  println(secondScanner)
+  println()
+
+  println("Checking group intersections:")
+  val firstGroups = firstScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
+  val secondGroups = secondScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
+  val thirdGroups = thirdScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
+
+  println("Intersection first & second:")
+  val firstAndSecond = firstGroups.intersect(secondGroups)
+  println(firstAndSecond.size)
+  println(firstAndSecond.take(5))
+  println()
+
+  firstAndSecond
+
+  println("Intersection first & third:")
+  val firstAndThird = firstGroups.intersect(thirdGroups)
+  println(firstAndThird.size)
+  println(firstAndThird.take(5))
+  println()
+
+  // TODO: Compute frequencies of points in the intersection and the number of detected point - do we detect all the common points?
+
+  // TODO: Do we combinatorially detect all the detectable tuples which are common to both scanners?
+  // 12 * 11 * 10 / 3! = 22 * 10 = 220 combinations
+
+  // TODO: How to deal with false positives, i.e. first and third scanner?
+
+  //Scanners which intersect have the most amount of point groups with matching signatures?
+  //The most frequent point in the intersections is the real intersection point?
 }

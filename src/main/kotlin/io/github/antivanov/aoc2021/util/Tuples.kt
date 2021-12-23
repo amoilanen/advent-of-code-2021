@@ -19,6 +19,11 @@ object Tuples {
     }
     return buildPartialTuplesOfSize(size, elements, listOf(emptyList<T>()))
   }
+
+  fun <T> setsOfSize(size: Int, elements: Set<T>): Set<Set<T>> =
+    tuplesOfSize(size, elements.toList()).map {
+      it.toSet()
+    }.toSet()
 }
 
 fun main() {
