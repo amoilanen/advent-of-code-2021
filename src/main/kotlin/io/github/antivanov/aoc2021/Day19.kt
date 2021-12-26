@@ -144,7 +144,55 @@ object Day19 {
     30,-46,-14
   """.trimIndent()
 
+  open class Transformation(val f: (Point) -> Point) {
+    companion object {
+      val Identity = Transformation { p: Point -> p }
+    }
+
+    fun compose(other: Transformation): Transformation =
+      Transformation { p: Point ->
+        f(other.apply(p))
+      }
+
+    fun apply(p: Point): Point =
+      f(p)
+  }
+
+  class LinearShift(vector: Point): Transformation({ p: Point ->
+    p.copy(
+      x = p.x + vector.x,
+      y = p.y + vector.y,
+      z = p.z + vector.z
+    )
+  })
+
+  val AxisDirectionChanges: List<Transformation> = listOf(
+    { p: Point -> p.copy(x = -p.x) },
+    { p: Point -> p.copy(x = -p.y) },
+    { p: Point -> p.copy(x = -p.x) }
+  ).map {
+    Transformation(it)
+  } + Transformation.Identity
+
+  val AxisRotations: List<Transformation> = listOf(
+    { p: Point -> p.copy(x = p.y, y = p.z, z = p.x) },
+    { p: Point -> p.copy(x = p.z, y = p.x, z = p.y) }
+  ).map {
+    Transformation(it)
+  } + Transformation.Identity
+
+  val PossibleTransformations =
+    AxisDirectionChanges.flatMap { axisDirectionChange ->
+      AxisRotations.map { axisRotation ->
+        listOf(axisDirectionChange.compose(axisRotation), axisRotation.compose(axisDirectionChange))
+      }
+    }
+
   data class Point(val x: Int, val y: Int, val z: Int) {
+    companion object {
+      val Zero = Point(0, 0, 0)
+    }
+
     fun distanceTo(other: Point): Int =
       listOf(x - other.x, y - other.y, z - other.z).map {
         abs(it) * abs(it)
@@ -200,13 +248,36 @@ $beacons
   }
 
   // At least 12 elements in the intersection
-  val MinimalPointToPointDistancesIntersectionSize = (12 * 11) / 2
+  val AdjacentScannerIntersectionSize = 12
+  val MinimalPointToPointDistancesIntersectionSize = (AdjacentScannerIntersectionSize * (AdjacentScannerIntersectionSize - 1)) / 2
 
   fun haveIntersection(first: Scanner, second: Scanner): Boolean {
     val intersection = first.pointToPointDistances.intersect(second.pointToPointDistances)
-    println("Intersection size: ${intersection.size}")
     return intersection.size >= MinimalPointToPointDistancesIntersectionSize
   }
+
+  fun intersectionPoints(first: Scanner, second: Scanner): Pair<Set<Point>, Set<Point>> {
+    val distanceIntersection = first.pointToPointDistances.intersect(second.pointToPointDistances.toSet())
+    val firstPoints = first.distancesFromPoints.filter { distanceIntersection.contains(it.second) }.map { it.first }.toSet()
+    val secondPoints = second.distancesFromPoints.filter { distanceIntersection.contains(it.second) }.map { it.first }.toSet()
+    return firstPoints to secondPoints
+  }
+
+  fun findTransformation(from: Set<Point>, to: Set<Point>): Transformation {
+    //TODO: Implement
+    return Transformation.Identity
+  }
+
+  fun pointWithSmallestCoordinates(points: Set<Point>): Point =
+    points.sortedWith { first, second ->
+      if (first.x > second.x) 1
+      else if (first.x < second.x) -1
+      else if (first.y > second.y) 1
+      else if (first.y < second.y) -1
+      else if (first.z > second.z) 1
+      else if (first.z < second.z) - 1
+      else 0
+    }.first()
 }
 
 fun main() {
@@ -219,7 +290,10 @@ fun main() {
   println()
 
   println(Day19.haveIntersection(firstScanner, secondScanner))
+  println(Day19.intersectionPoints(firstScanner, secondScanner))
+
   println(Day19.haveIntersection(firstScanner, thirdScanner))
+  println(Day19.intersectionPoints(firstScanner, thirdScanner))
   /*
   println("Checking group intersections:")
   val firstGroups = firstScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
