@@ -1,10 +1,7 @@
 package io.github.antivanov.aoc2021
 
 import io.github.antivanov.aoc2021.util.ParsingUtils
-import io.github.antivanov.aoc2021.util.HashFunctions.listOfNumbersHash
-import io.github.antivanov.aoc2021.util.Tuples.setsOfSize
 import kotlin.math.abs
-import kotlin.math.sign
 
 object Day19 {
 
@@ -148,53 +145,30 @@ object Day19 {
   """.trimIndent()
 
   data class Point(val x: Int, val y: Int, val z: Int) {
-    fun distanceTo(other: Point): Long =
+    fun distanceTo(other: Point): Int =
       listOf(x - other.x, y - other.y, z - other.z).map {
-        abs(it) * abs(it).toLong()
+        abs(it) * abs(it)
       }.sum()
 
     override fun toString(): String =
       "($x, $y, $z)"
   }
 
-  data class PointGroup(val points: Set<Point>, val allPointDistances: Map<Pair<Point, Point>, Long>) {
-    private fun computeSignaturesToPoints(points: Set<Point>): List<Pair<Point, Long>> {
-      val pointDistances = setsOfSize(2, points).map { twoPoints ->
-        val (first, second) = twoPoints.toList()
-        first to allPointDistances.get(first to second)!!
-      }
-      val pointSignatures = pointDistances.groupBy {
-        it.first
-      }.mapValues {
-        listOfNumbersHash(it.value.map { pointAndDistance ->
-          pointAndDistance.second
-        }.sorted())
-      }
-      return pointSignatures.toList()
-    }
-    val pointSignatures = computeSignaturesToPoints(points)
-    val signaturesToPoints: Map<Long, Point> = pointSignatures.map { it.second to it.first }.toMap()
-    val groupSignature: Long = listOfNumbersHash(pointSignatures.map { it.second }.sorted())
-
-    override fun toString(): String =
-      points.toString()
-  }
-
-  val FingerprintPointGroupSize = 3
-
   data class Scanner(val id: Int, val beacons: List<Point>) {
 
-    private fun allPointDistances(): Map<Pair<Point, Point>, Long> =
-      setsOfSize(2, beacons.toSet()).flatMap { twoPoints ->
-        val (first, second) = twoPoints.toList()
-        val distance = first.distanceTo(second)
-        listOf((first to second) to distance, (second to first) to distance)
-      }.toMap()
+    val distancesFromPoints: List<Pair<Point, Int>> =
+      beacons.indices.flatMap { firstBeaconIndex ->
+        (firstBeaconIndex + 1 until beacons.size).map { secondBeaconIndex ->
+          beacons[firstBeaconIndex] to beacons[firstBeaconIndex].distanceTo(beacons[secondBeaconIndex])
+        }
+      }
 
-    fun pointGroupsOf(groupSize: Int): Set<PointGroup> =
-      setsOfSize(groupSize, beacons.toSet()).map {
-        PointGroup(it, allPointDistances())
-      }.toSet()
+    /*
+     * Fairly native but working approach (will not work in the general case) assuming that distances between
+     * points are sufficiently different for the same scanner.
+     */
+    val pointToPointDistances: List<Int> =
+      distancesFromPoints.map { it.second }
 
     override fun toString(): String {
       val beacons = beacons.joinToString("\n")
@@ -225,27 +199,13 @@ $beacons
     return Point(x, y, z)
   }
 
-  fun intersectGroups(first: Set<PointGroup>, second: Set<PointGroup>): Set<PointGroup> {
-    val firstSignaturesAndGroups = first.map {
-      it.groupSignature to it
-    }
-    val secondSignatures = second.map {
-      it.groupSignature
-    }.toSet()
-    return firstSignaturesAndGroups.filter {
-      secondSignatures.contains(it.first)
-    }.toMap().values.toSet()
-  }
+  // At least 12 elements in the intersection
+  val MinimalPointToPointDistancesIntersectionSize = (12 * 11) / 2
 
-  fun computeIntersection(first: Set<PointGroup>, second: Set<PointGroup>): Set<Point> {
-    // All should have 55 = 11 * 10 / 2! frequency
-    println("Points with frequencies:")
-    val pointsAndFrequencies = intersectGroups(first, second).flatMap { it.points }.groupBy { it }.mapValues {
-      it.value.size
-    }.toList().sortedBy { it.second }.reversed()
-    println(pointsAndFrequencies)
-
-    return intersectGroups(first, second).flatMap { it.points }.toSet()
+  fun haveIntersection(first: Scanner, second: Scanner): Boolean {
+    val intersection = first.pointToPointDistances.intersect(second.pointToPointDistances)
+    println("Intersection size: ${intersection.size}")
+    return intersection.size >= MinimalPointToPointDistancesIntersectionSize
   }
 }
 
@@ -258,10 +218,14 @@ fun main() {
   println(secondScanner)
   println()
 
+  println(Day19.haveIntersection(firstScanner, secondScanner))
+  println(Day19.haveIntersection(firstScanner, thirdScanner))
+  /*
   println("Checking group intersections:")
   val firstGroups = firstScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
   val secondGroups = secondScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
   val thirdGroups = thirdScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
+
 
   println("Intersection first & second:")
   val firstAndSecond = Day19.intersectGroups(firstGroups, secondGroups)
@@ -278,6 +242,7 @@ fun main() {
   println("Points in the intersection:")
   println(Day19.computeIntersection(firstGroups, thirdGroups).size)
   println()
+  */
 
   //TODO: Compute frequencies of points in the intersection and the number of detected point - do we detect all the common points?
 
