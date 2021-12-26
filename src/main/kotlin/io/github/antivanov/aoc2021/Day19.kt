@@ -166,25 +166,29 @@ object Day19 {
     )
   })
 
-  val AxisDirectionChanges: List<Transformation> = listOf(
+  val AxisDirectionChanges: List<Transformation> = listOf(Transformation.Identity) + listOf(
     { p: Point -> p.copy(x = -p.x) },
     { p: Point -> p.copy(x = -p.y) },
-    { p: Point -> p.copy(x = -p.x) }
+    { p: Point -> p.copy(x = -p.x) },
+    { p: Point -> p.copy(x = -p.x, y = -p.y) },
+    { p: Point -> p.copy(x = -p.x, z = -p.z) },
+    { p: Point -> p.copy(y = -p.y, z = -p.z) },
+    { p: Point -> p.copy(x = -p.x, y = -p.y, z = -p.z) }
   ).map {
     Transformation(it)
-  } + Transformation.Identity
+  }
 
-  val AxisRotations: List<Transformation> = listOf(
+  val AxisRotations: List<Transformation> = listOf(Transformation.Identity) + listOf(
     { p: Point -> p.copy(x = p.y, y = p.z, z = p.x) },
     { p: Point -> p.copy(x = p.z, y = p.x, z = p.y) }
   ).map {
     Transformation(it)
-  } + Transformation.Identity
+  }
 
   val PossibleTransformations: List<Transformation> =
     AxisDirectionChanges.flatMap { axisDirectionChange ->
-      AxisRotations.flatMap { axisRotation ->
-        listOf(axisDirectionChange.compose(axisRotation), axisRotation.compose(axisDirectionChange))
+      AxisRotations.map { axisRotation ->
+        axisDirectionChange.compose(axisRotation)
       }
     }
 
@@ -263,6 +267,8 @@ $beacons
     return firstPoints to secondPoints
   }
 
+  //TODO: Are all rotations generated?
+  //TODO: Do we correctly find the
   fun findTransformationToFirst(first: Set<Point>, second: Set<Point>): Transformation {
     val firstSmallestPoint = smallestPointOf(first)
     val transformationsToTry = PossibleTransformations.map { transformation ->
@@ -309,10 +315,19 @@ fun main() {
 
   println(Day19.haveIntersection(firstScanner, secondScanner))
   val (firstScannerPoints, secondScannerPoints) = Day19.intersectionPoints(firstScanner, secondScanner)
-  val transformationToFirst = Day19.findTransformationToFirst(firstScannerPoints, secondScannerPoints)
 
+  //TODO: Should include (x, y, z) -> (-x, y, -z), or (-1, 2, -3)
+  println("Making sure all the transforms are done:")
+  val point = Day19.Point(1, 2, 3)
+  Day19.PossibleTransformations.forEach { t ->
+    val transformed = t.apply(point)
+    println(transformed)
+  }
+
+  //TODO:
+  //val transformationToFirst = Day19.findTransformationToFirst(firstScannerPoints, secondScannerPoints)
   // Should be Point(-68,1246,43)
-  println(transformationToFirst.apply(Day19.Point.Zero))
+  //println(transformationToFirst.apply(Day19.Point.Zero))
 
   //TODO: Transform the beacons of the second scanner to the beacons of the first scanner
 }
