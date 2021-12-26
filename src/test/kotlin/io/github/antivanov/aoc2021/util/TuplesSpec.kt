@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 class TuplesSpec {
 
   @Test
-  fun test_select_tuples_from_list() {
+  fun test_select_tuples_from_set_1() {
     assertEquals(listOf(
       listOf(1, 2),
       listOf(2, 1),
@@ -17,5 +17,13 @@ class TuplesSpec {
     ).toSet(), Tuples.tuplesOfSize(2,
       listOf(1, 2, 3)
     ).toSet())
+  }
+
+  @Test
+  fun test_select_tuples_from_set_2() {
+    val expectedSize = (25 * 24 * 23) / (3 * 2 * 1)
+    assertEquals(expectedSize, Tuples.setsOfSize(3,
+      (1..25).toSet()
+    ).size)
   }
 }

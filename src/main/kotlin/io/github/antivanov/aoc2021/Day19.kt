@@ -148,17 +148,17 @@ object Day19 {
   """.trimIndent()
 
   data class Point(val x: Int, val y: Int, val z: Int) {
-    fun distanceTo(other: Point): Int =
+    fun distanceTo(other: Point): Long =
       listOf(x - other.x, y - other.y, z - other.z).map {
-        abs(it)
+        abs(it) * abs(it).toLong()
       }.sum()
 
     override fun toString(): String =
       "($x, $y, $z)"
   }
 
-  data class PointGroup(val points: Set<Point>, val allPointDistances: Map<Pair<Point, Point>, Int>) {
-    private fun computeSignaturesToPoints(points: Set<Point>): Map<Int, Point> {
+  data class PointGroup(val points: Set<Point>, val allPointDistances: Map<Pair<Point, Point>, Long>) {
+    private fun computeSignaturesToPoints(points: Set<Point>): List<Pair<Point, Long>> {
       val pointDistances = setsOfSize(2, points).map { twoPoints ->
         val (first, second) = twoPoints.toList()
         first to allPointDistances.get(first to second)!!
@@ -170,18 +170,11 @@ object Day19 {
           pointAndDistance.second
         }.sorted())
       }
-      return pointSignatures.toList().map {
-        it.second to it.first
-      }.toMap()
+      return pointSignatures.toList()
     }
-    val signaturesToPoints: Map<Int, Point> = computeSignaturesToPoints(points)
-    val groupSignature: Int = listOfNumbersHash(signaturesToPoints.toList().map { it.first }.sorted())
-
-    override fun hashCode(): Int =
-      groupSignature.toInt()
-
-    override fun equals(other: Any?): Boolean =
-      other is PointGroup && groupSignature == other.groupSignature
+    val pointSignatures = computeSignaturesToPoints(points)
+    val signaturesToPoints: Map<Long, Point> = pointSignatures.map { it.second to it.first }.toMap()
+    val groupSignature: Long = listOfNumbersHash(pointSignatures.map { it.second }.sorted())
 
     override fun toString(): String =
       points.toString()
@@ -191,7 +184,7 @@ object Day19 {
 
   data class Scanner(val id: Int, val beacons: List<Point>) {
 
-    private fun allPointDistances(): Map<Pair<Point, Point>, Int> =
+    private fun allPointDistances(): Map<Pair<Point, Point>, Long> =
       setsOfSize(2, beacons.toSet()).flatMap { twoPoints ->
         val (first, second) = twoPoints.toList()
         val distance = first.distanceTo(second)
@@ -238,7 +231,12 @@ $beacons
     }
     val secondSignatures = second.map {
       it.groupSignature
-    }
+    }.toSet()
+    val firstSignatures = firstSignaturesAndGroups.map { it.first }.toSet()
+    println("First distinct signatures = ${firstSignatures.size}")
+    println("Second distinct signatures = ${secondSignatures.size}")
+    val intersection = firstSignatures.intersect(secondSignatures)
+    println("Intersection size = ${intersection.size}")
     return firstSignaturesAndGroups.filter {
       secondSignatures.contains(it.first)
     }.toMap().values.toSet()
@@ -259,17 +257,26 @@ fun main() {
   val secondGroups = secondScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
   val thirdGroups = thirdScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
 
-  println("Intersection first & second:")
-  val firstAndSecond = Day19.intersectGroups(firstGroups, secondGroups)
-  println(firstAndSecond.size)
-  println(firstAndSecond.take(5))
+  println("Intersection first & first:")
+  val secondAndSecond = Day19.intersectGroups(secondGroups, secondGroups)
+  println(secondScanner.beacons.toSet().size)
+  println(secondGroups.size) // 2300 in total = (25 * 24 * 23) / (3 * 2 * 1)
+  println(secondAndSecond.size) // 2300 -  if a good hash function for point group fingerprint, less if not
   println()
 
+  println("Intersection first & second:")
+  val firstAndSecond = Day19.intersectGroups(firstGroups, secondGroups)
+  println(firstAndSecond.size) // at least 220 common point groups - (12 * 11 * 10) / (3 * 2 * 1)
+  println(firstAndSecond.drop(50).take(5))
+  println()
+
+  /*
   println("Intersection first & third:")
   val firstAndThird = Day19.intersectGroups(firstGroups, thirdGroups)
   println(firstAndThird.size)
   println(firstAndThird.take(5))
   println()
+   */
 
   //TODO: Compute the number of groups having the same signature inside the same beacon - ?
 
@@ -283,5 +290,5 @@ fun main() {
   //Scanners which intersect have the most amount of point groups with matching signatures?
   //The most frequent point in the intersections is the real intersection point?
 
-  //TODO:
+  //TODO: Transform the beacons of the second scanner to the beacons of the first scanner
 }
