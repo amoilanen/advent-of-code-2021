@@ -3,8 +3,8 @@ package io.github.antivanov.aoc2021.util
 object HashFunctions {
  private val PrimaryNumber = 37
 
- fun listOfNumbersHash(elements: List<Long>): Long  =
+ fun listOfNumbersHash(elements: List<Int>): Int  =
    elements.fold(1) { acc, it ->
-     acc * PrimaryNumber.toLong() + it
+     acc * PrimaryNumber + it
    }
 }
