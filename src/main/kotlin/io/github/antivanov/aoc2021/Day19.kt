@@ -181,9 +181,9 @@ object Day19 {
     Transformation(it)
   } + Transformation.Identity
 
-  val PossibleTransformations =
+  val PossibleTransformations: List<Transformation> =
     AxisDirectionChanges.flatMap { axisDirectionChange ->
-      AxisRotations.map { axisRotation ->
+      AxisRotations.flatMap { axisRotation ->
         listOf(axisDirectionChange.compose(axisRotation), axisRotation.compose(axisDirectionChange))
       }
     }
@@ -263,12 +263,30 @@ $beacons
     return firstPoints to secondPoints
   }
 
-  fun findTransformation(from: Set<Point>, to: Set<Point>): Transformation {
-    //TODO: Implement
-    return Transformation.Identity
+  fun findTransformationToFirst(first: Set<Point>, second: Set<Point>): Transformation {
+    val firstSmallestPoint = smallestPointOf(first)
+    val transformationsToTry = PossibleTransformations.map { transformation ->
+      val secondTransformed = second.map {
+        transformation.apply(it)
+      }.toSet()
+      val secondTransformedSmallestPoint = smallestPointOf(secondTransformed)
+      val shiftVector = Point(
+        firstSmallestPoint.x - secondTransformedSmallestPoint.x,
+        firstSmallestPoint.y - secondTransformedSmallestPoint.y,
+        firstSmallestPoint.z - secondTransformedSmallestPoint.z
+      )
+      val linearShift = LinearShift(shiftVector)
+      linearShift.compose(transformation)
+    }
+    return transformationsToTry.find { transformation ->
+      val secondTransformed = second.map {
+        transformation.apply(it)
+      }
+      secondTransformed.containsAll(first) && first.containsAll(secondTransformed)
+    }!!
   }
 
-  fun pointWithSmallestCoordinates(points: Set<Point>): Point =
+  fun smallestPointOf(points: Set<Point>): Point =
     points.sortedWith { first, second ->
       if (first.x > second.x) 1
       else if (first.x < second.x) -1
@@ -290,41 +308,11 @@ fun main() {
   println()
 
   println(Day19.haveIntersection(firstScanner, secondScanner))
-  println(Day19.intersectionPoints(firstScanner, secondScanner))
+  val (firstScannerPoints, secondScannerPoints) = Day19.intersectionPoints(firstScanner, secondScanner)
+  val transformationToFirst = Day19.findTransformationToFirst(firstScannerPoints, secondScannerPoints)
 
-  println(Day19.haveIntersection(firstScanner, thirdScanner))
-  println(Day19.intersectionPoints(firstScanner, thirdScanner))
-  /*
-  println("Checking group intersections:")
-  val firstGroups = firstScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
-  val secondGroups = secondScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
-  val thirdGroups = thirdScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
-
-
-  println("Intersection first & second:")
-  val firstAndSecond = Day19.intersectGroups(firstGroups, secondGroups)
-  println(firstAndSecond.size) // at least 220 common point groups - (12 * 11 * 10) / (3 * 2 * 1)
-  println(firstAndSecond.drop(50).take(5))
-  println("Points in the intersection:")
-  println(Day19.computeIntersection(firstGroups, secondGroups).size)
-  println()
-
-  println("Intersection first & third:")
-  val firstAndThird = Day19.intersectGroups(firstGroups, thirdGroups)
-  println(firstAndThird.size)
-  println(firstAndThird.take(5))
-  println("Points in the intersection:")
-  println(Day19.computeIntersection(firstGroups, thirdGroups).size)
-  println()
-  */
-
-  //TODO: Compute frequencies of points in the intersection and the number of detected point - do we detect all the common points?
-
-  //TODO: Do we combinatorially detect all the detectable tuples which are common to both scanners?
-  // 12 * 11 * 10 / 3! = 22 * 10 = 220 combinations
-
-  //Scanners which intersect have the most amount of point groups with matching signatures?
-  //The most frequent point in the intersections is the real intersection point?
+  // Should be Point(-68,1246,43)
+  println(transformationToFirst.apply(Day19.Point.Zero))
 
   //TODO: Transform the beacons of the second scanner to the beacons of the first scanner
 }
