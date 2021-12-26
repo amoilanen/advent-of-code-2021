@@ -232,14 +232,20 @@ $beacons
     val secondSignatures = second.map {
       it.groupSignature
     }.toSet()
-    val firstSignatures = firstSignaturesAndGroups.map { it.first }.toSet()
-    println("First distinct signatures = ${firstSignatures.size}")
-    println("Second distinct signatures = ${secondSignatures.size}")
-    val intersection = firstSignatures.intersect(secondSignatures)
-    println("Intersection size = ${intersection.size}")
     return firstSignaturesAndGroups.filter {
       secondSignatures.contains(it.first)
     }.toMap().values.toSet()
+  }
+
+  fun computeIntersection(first: Set<PointGroup>, second: Set<PointGroup>): Set<Point> {
+    // All should have 55 = 11 * 10 / 2! frequency
+    println("Points with frequencies:")
+    val pointsAndFrequencies = intersectGroups(first, second).flatMap { it.points }.groupBy { it }.mapValues {
+      it.value.size
+    }.toList().sortedBy { it.second }.reversed()
+    println(pointsAndFrequencies)
+
+    return intersectGroups(first, second).flatMap { it.points }.toSet()
   }
 }
 
@@ -257,35 +263,26 @@ fun main() {
   val secondGroups = secondScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
   val thirdGroups = thirdScanner.pointGroupsOf(Day19.FingerprintPointGroupSize)
 
-  println("Intersection first & first:")
-  val secondAndSecond = Day19.intersectGroups(secondGroups, secondGroups)
-  println(secondScanner.beacons.toSet().size)
-  println(secondGroups.size) // 2300 in total = (25 * 24 * 23) / (3 * 2 * 1)
-  println(secondAndSecond.size) // 2300 -  if a good hash function for point group fingerprint, less if not
-  println()
-
   println("Intersection first & second:")
   val firstAndSecond = Day19.intersectGroups(firstGroups, secondGroups)
   println(firstAndSecond.size) // at least 220 common point groups - (12 * 11 * 10) / (3 * 2 * 1)
   println(firstAndSecond.drop(50).take(5))
+  println("Points in the intersection:")
+  println(Day19.computeIntersection(firstGroups, secondGroups).size)
   println()
 
-  /*
   println("Intersection first & third:")
   val firstAndThird = Day19.intersectGroups(firstGroups, thirdGroups)
   println(firstAndThird.size)
   println(firstAndThird.take(5))
+  println("Points in the intersection:")
+  println(Day19.computeIntersection(firstGroups, thirdGroups).size)
   println()
-   */
-
-  //TODO: Compute the number of groups having the same signature inside the same beacon - ?
 
   //TODO: Compute frequencies of points in the intersection and the number of detected point - do we detect all the common points?
 
   //TODO: Do we combinatorially detect all the detectable tuples which are common to both scanners?
   // 12 * 11 * 10 / 3! = 22 * 10 = 220 combinations
-
-  //TODO: How to deal with false positives, i.e. first and third scanner?
 
   //Scanners which intersect have the most amount of point groups with matching signatures?
   //The most frequent point in the intersections is the real intersection point?
