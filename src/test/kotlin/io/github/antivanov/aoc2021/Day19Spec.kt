@@ -16,29 +16,31 @@ class Day19Spec {
     }.toSet()
     val expected = hashSetOf(
       Point(1, 2, 3),
-
       Point(-1, 2, 3),
       Point(1, -2, 3),
       Point(1, 2, -3),
       Point(-1, -2, 3),
       Point(1, -2, -3),
+      Point(-1, 2, -3),
       Point(-1, -2, -3),
 
-      Point(2, 3, 1),
-      Point( 2, 3, -1),
-      Point(-2, 3, 1),
-      Point(2, -3, 1),
-      Point( -2, 3, -1),
-      Point(-2, -3, 1),
-      Point( -2, -3, -1),
-
       Point(3, 1, 2),
+      Point(-3, 1, 2),
       Point(3, -1, 2),
       Point(3, 1, -2),
-      Point(3, 1, 2),
-      Point( 3,-1, -2),
-      Point(-3,1, -2),
-      Point( -3, -1, -2),
+      Point(-3, -1, 2),
+      Point(3, -1, -2),
+      Point(-3, 1, -2),
+      Point(-3, -1, -2),
+
+      Point(2, 3, 1),
+      Point(-2, 3, 1),
+      Point(2, -3, 1),
+      Point(2, 3, -1),
+      Point(-2, -3, 1),
+      Point(2, -3, -1),
+      Point(-2, 3, -1),
+      Point(-2, -3, -1),
     ).toSet()
     assertEquals(expected, transformed)
   }
