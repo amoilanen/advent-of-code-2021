@@ -180,7 +180,10 @@ object Day19 {
 
   val AxisRotations: List<Transformation> = listOf(Transformation.Identity) + listOf(
     { p: Point -> p.copy(x = p.y, y = p.z, z = p.x) },
-    { p: Point -> p.copy(x = p.z, y = p.x, z = p.y) }
+    { p: Point -> p.copy(x = p.z, y = p.x, z = p.y) },
+    { p: Point -> p.copy(x = p.z, y = p.y, z = p.x) },
+    { p: Point -> p.copy(x = p.y, y = p.x, z = p.z) },
+    { p: Point -> p.copy(x = p.x, y = p.z, z = p.y) }
   ).map {
     Transformation(it)
   }
@@ -241,7 +244,7 @@ $beacons
     }
   }
 
-  fun parseInput(input: String): List<Scanner> {
+  fun parse(input: String): List<Scanner> {
     val lines = input.split("\n").map { it.trim() }
     val scannerInputs = ParsingUtils.splitByElement(lines, "")
     return scannerInputs.indices.zip(scannerInputs).map {
@@ -262,8 +265,8 @@ $beacons
   }
 
   // At least 12 elements in the intersection
-  val AdjacentScannerIntersectionSize = 12
-  val MinimalPointToPointDistancesIntersectionSize = (AdjacentScannerIntersectionSize * (AdjacentScannerIntersectionSize - 1)) / 2
+  private const val AdjacentScannerIntersectionSize = 12
+  private const val MinimalPointToPointDistancesIntersectionSize = (AdjacentScannerIntersectionSize * (AdjacentScannerIntersectionSize - 1)) / 2
 
   fun haveIntersection(first: Scanner, second: Scanner): Boolean {
     val intersection = first.pointToPointDistances.intersect(second.pointToPointDistances)
@@ -300,7 +303,13 @@ $beacons
     }
   }
 
-  fun smallestPointOf(points: Set<Point>): Point =
+  fun findTransformationToFirst(first: Scanner, second: Scanner): Transformation? {
+    val (firstScannerPoints, secondScannerPoints) = intersectionPoints(first, second)
+    return findTransformationToFirst(firstScannerPoints, secondScannerPoints)!!
+  }
+
+
+  private fun smallestPointOf(points: Set<Point>): Point =
     points.sortedWith { first, second ->
       if (first.x > second.x) 1
       else if (first.x < second.x) -1
@@ -310,27 +319,31 @@ $beacons
       else if (first.z < second.z) - 1
       else 0
     }.first()
+
+  private fun collectBeacons(scanners: List<Scanner>): Scanner {
+    var completeScanner = scanners.first()
+    var remainingScanners = scanners.drop(1)
+    while (remainingScanners.isNotEmpty()) {
+      val nextMatchedScanner = remainingScanners.find {
+        haveIntersection(completeScanner, it)
+      }!!
+      val transformation = findTransformationToFirst(completeScanner, nextMatchedScanner)!!
+      val nextMatchedScannerBeaconsTransformed = nextMatchedScanner.beacons.map {
+        transformation.apply(it)
+      }
+      val combinedBeacons = completeScanner.beacons.toSet() + nextMatchedScannerBeaconsTransformed.toSet()
+
+      completeScanner = completeScanner.copy(beacons = combinedBeacons.toList())
+      remainingScanners = remainingScanners.filter { it != nextMatchedScanner }
+    }
+    return completeScanner
+  }
+
+  fun part1(scanners: List<Scanner>): Int =
+    collectBeacons(scanners).beacons.size
 }
 
 fun main() {
-  val parsed = Day19.parseInput(Day19.input)
-  val (firstScanner, secondScanner, thirdScanner, fourthScanner, fifthScanner) = parsed
-  println()
-  println(firstScanner)
-  println()
-  println(secondScanner)
-  println()
-
-  println(Day19.haveIntersection(firstScanner, secondScanner))
-  val (firstScannerPoints, secondScannerPoints) = Day19.intersectionPoints(firstScanner, secondScanner)
-
-  val transformationToFirst = Day19.findTransformationToFirst(firstScannerPoints, secondScannerPoints)!!
-  // Should be Point(68, -1246, -43)
-  println(transformationToFirst.apply(Day19.Point.Zero))
-
-  val secondScannerBeaconsTransformed = secondScanner.beacons.map {
-    transformationToFirst.apply(it)
-  }
-  val combinedFirstAndSecondBeacons = firstScanner.beacons.toSet() + secondScanner.beacons.toSet()
-  println(combinedFirstAndSecondBeacons)
+  val scanners = Day19.parse(Day19.input)
+  println(Day19.part1(scanners))
 }
