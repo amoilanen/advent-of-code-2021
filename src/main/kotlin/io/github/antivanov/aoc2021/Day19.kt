@@ -263,7 +263,7 @@ $beacons
 
   // At least 12 elements in the intersection
   val AdjacentScannerIntersectionSize = 12
-  val MinimalPointToPointDistancesIntersectionSize = (AdjacentScannerIntersectionSize * (AdjacentScannerIntersectionSize - 1))
+  val MinimalPointToPointDistancesIntersectionSize = (AdjacentScannerIntersectionSize * (AdjacentScannerIntersectionSize - 1)) / 2
 
   fun haveIntersection(first: Scanner, second: Scanner): Boolean {
     val intersection = first.pointToPointDistances.intersect(second.pointToPointDistances)
@@ -272,39 +272,17 @@ $beacons
 
   fun intersectionPoints(first: Scanner, second: Scanner): Pair<Set<Point>, Set<Point>> {
     val distanceIntersection = first.pointToPointDistances.intersect(second.pointToPointDistances.toSet())
-    println("Common distances size:")
-    println(distanceIntersection.size)
-
-    //FIXME: Why only 11 points? Should be 12? Because there are 66 matching distances
     val firstPoints = first.distancesFromPoints.filter { distanceIntersection.contains(it.second) }.map { it.first }.toSet()
     val secondPoints = second.distancesFromPoints.filter { distanceIntersection.contains(it.second) }.map { it.first }.toSet()
-
-    println("Intersection size")
-    println(firstPoints.size)
-    println(secondPoints.size)
-
     return firstPoints to secondPoints
   }
 
-  val KnownShift = Point(68, -1246, -43)
-  val ProbePoint = Point(1, 2, 3)
-  //TODO: Are all rotations generated? - yes
-  //TODO: Do we correctly find the matching "closest to 0" point - yes
   fun findTransformationToFirst(first: Set<Point>, second: Set<Point>): Transformation? {
     val firstSmallestPoint = smallestPointOf(first)
     val transformationsToTry = PossibleTransformations.map { transformation ->
-      val pointZeroTransformed = transformation.apply(ProbePoint)
       val secondTransformed = second.map {
         transformation.apply(it)
       }.toSet()
-      if (pointZeroTransformed == Point(-1, 2, -3)) {
-        println("Found the required transformation")
-        val secondTransformedAndShifted = secondTransformed.map {
-          it.shiftBy(KnownShift)
-        }
-        println("Transformation application 1:")
-        println(secondTransformedAndShifted)
-      }
       val secondTransformedSmallestPoint = smallestPointOf(secondTransformed)
       val shiftVector = Point(
         firstSmallestPoint.x - secondTransformedSmallestPoint.x,
@@ -312,26 +290,13 @@ $beacons
         firstSmallestPoint.z - secondTransformedSmallestPoint.z
       )
       val linearShift = LinearShift(shiftVector)
-      val transformation = linearShift.compose(transformation)
-      if (pointZeroTransformed == Point(-1, 2, -3)) {
-        val secondTransformedByComposedTransformation = second.map {
-          transformation.apply(it)
-        }
-        println("Transformation application 2:")
-        println(secondTransformedByComposedTransformation)
-
-        println("First set of points:")
-        println(first)
-
-        println(first.toSet().equals(secondTransformedByComposedTransformation.toSet()))
-      }
-      transformation
+      linearShift.compose(transformation)
     }
     return transformationsToTry.find { transformation ->
       val secondTransformed = second.map {
         transformation.apply(it)
       }
-      secondTransformed.toSet().equals(first.toSet())
+      secondTransformed.toSet() == first.toSet()
     }
   }
 
@@ -363,5 +328,9 @@ fun main() {
   // Should be Point(68, -1246, -43)
   println(transformationToFirst.apply(Day19.Point.Zero))
 
-  //TODO: Transform the beacons of the second scanner to the beacons of the first scanner
+  val secondScannerBeaconsTransformed = secondScanner.beacons.map {
+    transformationToFirst.apply(it)
+  }
+  val combinedFirstAndSecondBeacons = firstScanner.beacons.toSet() + secondScanner.beacons.toSet()
+  println(combinedFirstAndSecondBeacons)
 }
