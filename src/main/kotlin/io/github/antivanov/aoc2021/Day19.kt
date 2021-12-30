@@ -1,8 +1,5 @@
 package io.github.antivanov.aoc2021
 
-import arrow.core.Some
-import arrow.core.getOrElse
-import arrow.core.none
 import io.github.antivanov.aoc2021.util.ParsingUtils
 import kotlin.math.abs
 
@@ -311,7 +308,6 @@ $beacons
     return findTransformationToFirst(firstScannerPoints, secondScannerPoints)!!
   }
 
-
   private fun smallestPointOf(points: Set<Point>): Point =
     points.sortedWith { first, second ->
       if (first.x > second.x) 1
@@ -323,27 +319,73 @@ $beacons
       else 0
     }.first()
 
-  fun joinBeacons(scanners: List<Scanner>): List<Point> {
-    val scannerLinks = scanners.map { scanner ->
-      val connectedScanners = scanners.map { otherScanner ->
+  private fun buildScannerGraph(scanners: List<Scanner>): Map<Pair<Scanner, Scanner>, Transformation> =
+    scanners.flatMap { scanner ->
+      scanners.flatMap { otherScanner ->
         if (otherScanner != scanner && haveIntersection(scanner, otherScanner)) {
           val transformation = findTransformationToFirst(scanner, otherScanner)!!
-          otherScanner to Some(transformation)
+          listOf((scanner to otherScanner) to transformation)
         } else
-          otherScanner to none<Transformation>()
-      }.filter {
-        it.second.isDefined()
-      }.map {
-        it.first to it.second.getOrElse { Transformation.Identity }
+          emptyList()
       }
-      scanner to connectedScanners
     }.toMap()
-    val scannerMap = scannerLinks.map {
-      it.key.id to it.value.map {
-        it.first.id
+
+  /*
+   * Floyd Warshall algorithm for building a transitive closure of a graph
+   * https://www.programiz.com/dsa/floyd-warshall-algorithm
+   */
+  private fun buildClosure(scanners: List<Scanner>, scannerGraph: Map<Pair<Scanner, Scanner>, Transformation>): Map<Pair<Scanner, Scanner>, Transformation> {
+    var currentGraph = scannerGraph
+    var newEdges = scannerGraph.toList()
+    while (newEdges.isNotEmpty()) {
+      //println("New edges = ")
+      //showGraph(newEdges.toMap())
+      newEdges = scanners.flatMap { first ->
+        scanners.filter {
+          currentGraph.contains(first to it) && first != it
+        }.flatMap { second ->
+          val firstToSecond = currentGraph.get(first to second)!!
+          scanners.filter {
+            currentGraph.contains(second to it) && second != it
+          }.flatMap { third ->
+            if (!currentGraph.contains(first to third) && first != third) {
+              val secondToThird = currentGraph.get(second to third)!!
+              val firstToThird = secondToThird.compose(firstToSecond)
+              listOf((first to third) to firstToThird)
+            } else {
+              emptyList()
+            }
+          }
+        }
       }
+      currentGraph = (currentGraph.toList() + newEdges).toMap()
     }
-    println(scannerMap)
+    return currentGraph
+  }
+
+  fun showGraph(scannerGraph: Map<Pair<Scanner, Scanner>, Transformation>) {
+    val edges = scannerGraph.map {
+      it.key.first.id to it.key.second.id
+    }
+    println(edges)
+  }
+
+  // An improved version over collectBeacons
+  fun joinBeacons(scanners: List<Scanner>): List<Point> {
+    val scannerGraph = buildScannerGraph(scanners)
+    showGraph(scannerGraph)
+
+    val scannerGraphClosure = buildClosure(scanners, scannerGraph)
+    showGraph(scannerGraphClosure)
+
+    println(scannerGraphClosure.size)
+
+    val firstScanner = scanners.find { it.id == 0 }!!
+    val scannersToJoin = scanners.filter { it.id != 0 }
+
+    val scannerTransformations = scannersToJoin.map { scanner ->
+      //TODO: Find the transformation and apply it to the scanner points, join points together
+    }
     return emptyList()
   }
 
