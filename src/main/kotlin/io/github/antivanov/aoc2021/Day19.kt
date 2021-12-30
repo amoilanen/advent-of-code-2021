@@ -1,5 +1,8 @@
 package io.github.antivanov.aoc2021
 
+import arrow.core.Some
+import arrow.core.getOrElse
+import arrow.core.none
 import io.github.antivanov.aoc2021.util.ParsingUtils
 import kotlin.math.abs
 
@@ -320,13 +323,39 @@ $beacons
       else 0
     }.first()
 
+  fun joinBeacons(scanners: List<Scanner>): List<Point> {
+    val scannerLinks = scanners.map { scanner ->
+      val connectedScanners = scanners.map { otherScanner ->
+        if (otherScanner != scanner && haveIntersection(scanner, otherScanner)) {
+          val transformation = findTransformationToFirst(scanner, otherScanner)!!
+          otherScanner to Some(transformation)
+        } else
+          otherScanner to none<Transformation>()
+      }.filter {
+        it.second.isDefined()
+      }.map {
+        it.first to it.second.getOrElse { Transformation.Identity }
+      }
+      scanner to connectedScanners
+    }.toMap()
+    val scannerMap = scannerLinks.map {
+      it.key.id to it.value.map {
+        it.first.id
+      }
+    }
+    println(scannerMap)
+    return emptyList()
+  }
+
   private fun collectBeacons(scanners: List<Scanner>): Scanner {
     var completeScanner = scanners.first()
     var remainingScanners = scanners.drop(1)
     while (remainingScanners.isNotEmpty()) {
+      //TODO: Find intersection not with the complete scanner but with the previously joinedScanner?
       val nextMatchedScanner = remainingScanners.find {
         haveIntersection(completeScanner, it)
       }!!
+      println("Joining scanner ${nextMatchedScanner.id}")
       val transformation = findTransformationToFirst(completeScanner, nextMatchedScanner)!!
       val nextMatchedScannerBeaconsTransformed = nextMatchedScanner.beacons.map {
         transformation.apply(it)
@@ -335,6 +364,7 @@ $beacons
 
       completeScanner = completeScanner.copy(beacons = combinedBeacons.toList())
       remainingScanners = remainingScanners.filter { it != nextMatchedScanner }
+      println("${remainingScanners.size} scanners to still join...")
     }
     return completeScanner
   }
@@ -346,4 +376,6 @@ $beacons
 fun main() {
   val scanners = Day19.parse(Day19.input)
   println(Day19.part1(scanners))
+
+  Day19.joinBeacons(scanners)
 }
