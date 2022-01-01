@@ -324,7 +324,7 @@ $beacons
       scanners.flatMap { otherScanner ->
         if (otherScanner != scanner && haveIntersection(scanner, otherScanner)) {
           val transformation = findTransformationToFirst(scanner, otherScanner)!!
-          listOf((scanner to otherScanner) to transformation)
+          listOf((otherScanner to scanner) to transformation)
         } else
           emptyList()
       }
@@ -338,8 +338,6 @@ $beacons
     var currentGraph = scannerGraph
     var newEdges = scannerGraph.toList()
     while (newEdges.isNotEmpty()) {
-      //println("New edges = ")
-      //showGraph(newEdges.toMap())
       newEdges = scanners.flatMap { first ->
         scanners.filter {
           currentGraph.contains(first to it) && first != it
@@ -371,53 +369,37 @@ $beacons
   }
 
   // An improved version over collectBeacons
-  fun joinBeacons(scanners: List<Scanner>): List<Point> {
+  fun joinBeacons(scanners: List<Scanner>): Set<Point> {
     val scannerGraph = buildScannerGraph(scanners)
     showGraph(scannerGraph)
 
     val scannerGraphClosure = buildClosure(scanners, scannerGraph)
     showGraph(scannerGraphClosure)
 
-    println(scannerGraphClosure.size)
-
     val firstScanner = scanners.find { it.id == 0 }!!
     val scannersToJoin = scanners.filter { it.id != 0 }
 
-    val scannerTransformations = scannersToJoin.map { scanner ->
-      //TODO: Find the transformation and apply it to the scanner points, join points together
-    }
-    return emptyList()
-  }
-
-  private fun collectBeacons(scanners: List<Scanner>): Scanner {
-    var completeScanner = scanners.first()
-    var remainingScanners = scanners.drop(1)
-    while (remainingScanners.isNotEmpty()) {
-      //TODO: Find intersection not with the complete scanner but with the previously joinedScanner?
-      val nextMatchedScanner = remainingScanners.find {
-        haveIntersection(completeScanner, it)
-      }!!
-      println("Joining scanner ${nextMatchedScanner.id}")
-      val transformation = findTransformationToFirst(completeScanner, nextMatchedScanner)!!
-      val nextMatchedScannerBeaconsTransformed = nextMatchedScanner.beacons.map {
+    val firstScannerBeacons = firstScanner.beacons.toSet()
+    val otherTransformedBeacons = scannersToJoin.map { scanner ->
+      val transformation = scannerGraphClosure.get(scanner to firstScanner)!!
+      val transformedPoints = scanner.beacons.map {
         transformation.apply(it)
+      }.toSet()
+      println("Transformed scanner ${scanner.id}, points = ")
+      transformedPoints.forEach {
+        println(it)
       }
-      val combinedBeacons = completeScanner.beacons.toSet() + nextMatchedScannerBeaconsTransformed.toSet()
+      transformedPoints
+    }.flatten().toSet()
 
-      completeScanner = completeScanner.copy(beacons = combinedBeacons.toList())
-      remainingScanners = remainingScanners.filter { it != nextMatchedScanner }
-      println("${remainingScanners.size} scanners to still join...")
-    }
-    return completeScanner
+    return firstScannerBeacons.union(otherTransformedBeacons)
   }
 
   fun part1(scanners: List<Scanner>): Int =
-    collectBeacons(scanners).beacons.size
+    joinBeacons(scanners).size
 }
 
 fun main() {
   val scanners = Day19.parse(Day19.input)
   println(Day19.part1(scanners))
-
-  Day19.joinBeacons(scanners)
 }
