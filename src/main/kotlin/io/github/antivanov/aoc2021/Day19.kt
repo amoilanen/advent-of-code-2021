@@ -385,10 +385,6 @@ $beacons
       val transformedPoints = scanner.beacons.map {
         transformation.apply(it)
       }.toSet()
-      println("Transformed scanner ${scanner.id}, points = ")
-      transformedPoints.forEach {
-        println(it)
-      }
       transformedPoints
     }.flatten().toSet()
 
