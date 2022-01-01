@@ -1,147 +1,152 @@
 package io.github.antivanov.aoc2021
 
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Some
+import arrow.core.toOption
 import io.github.antivanov.aoc2021.util.ParsingUtils
+import javax.xml.crypto.dsig.TransformService
 import kotlin.math.abs
 
 object Day19 {
 
   val input = """
-    --- scanner 0 ---
-    404,-588,-901
-    528,-643,409
-    -838,591,734
-    390,-675,-793
-    -537,-823,-458
-    -485,-357,347
-    -345,-311,381
-    -661,-816,-575
-    -876,649,763
-    -618,-824,-621
-    553,345,-567
-    474,580,667
-    -447,-329,318
-    -584,868,-557
-    544,-627,-890
-    564,392,-477
-    455,729,728
-    -892,524,684
-    -689,845,-530
-    423,-701,434
-    7,-33,-71
-    630,319,-379
-    443,580,662
-    -789,900,-551
-    459,-707,401
+--- scanner 0 ---
+404,-588,-901
+528,-643,409
+-838,591,734
+390,-675,-793
+-537,-823,-458
+-485,-357,347
+-345,-311,381
+-661,-816,-575
+-876,649,763
+-618,-824,-621
+553,345,-567
+474,580,667
+-447,-329,318
+-584,868,-557
+544,-627,-890
+564,392,-477
+455,729,728
+-892,524,684
+-689,845,-530
+423,-701,434
+7,-33,-71
+630,319,-379
+443,580,662
+-789,900,-551
+459,-707,401
 
-    --- scanner 1 ---
-    686,422,578
-    605,423,415
-    515,917,-361
-    -336,658,858
-    95,138,22
-    -476,619,847
-    -340,-569,-846
-    567,-361,727
-    -460,603,-452
-    669,-402,600
-    729,430,532
-    -500,-761,534
-    -322,571,750
-    -466,-666,-811
-    -429,-592,574
-    -355,545,-477
-    703,-491,-529
-    -328,-685,520
-    413,935,-424
-    -391,539,-444
-    586,-435,557
-    -364,-763,-893
-    807,-499,-711
-    755,-354,-619
-    553,889,-390
+--- scanner 1 ---
+686,422,578
+605,423,415
+515,917,-361
+-336,658,858
+95,138,22
+-476,619,847
+-340,-569,-846
+567,-361,727
+-460,603,-452
+669,-402,600
+729,430,532
+-500,-761,534
+-322,571,750
+-466,-666,-811
+-429,-592,574
+-355,545,-477
+703,-491,-529
+-328,-685,520
+413,935,-424
+-391,539,-444
+586,-435,557
+-364,-763,-893
+807,-499,-711
+755,-354,-619
+553,889,-390
 
-    --- scanner 2 ---
-    649,640,665
-    682,-795,504
-    -784,533,-524
-    -644,584,-595
-    -588,-843,648
-    -30,6,44
-    -674,560,763
-    500,723,-460
-    609,671,-379
-    -555,-800,653
-    -675,-892,-343
-    697,-426,-610
-    578,704,681
-    493,664,-388
-    -671,-858,530
-    -667,343,800
-    571,-461,-707
-    -138,-166,112
-    -889,563,-600
-    646,-828,498
-    640,759,510
-    -630,509,768
-    -681,-892,-333
-    673,-379,-804
-    -742,-814,-386
-    577,-820,562
+--- scanner 2 ---
+649,640,665
+682,-795,504
+-784,533,-524
+-644,584,-595
+-588,-843,648
+-30,6,44
+-674,560,763
+500,723,-460
+609,671,-379
+-555,-800,653
+-675,-892,-343
+697,-426,-610
+578,704,681
+493,664,-388
+-671,-858,530
+-667,343,800
+571,-461,-707
+-138,-166,112
+-889,563,-600
+646,-828,498
+640,759,510
+-630,509,768
+-681,-892,-333
+673,-379,-804
+-742,-814,-386
+577,-820,562
 
-    --- scanner 3 ---
-    -589,542,597
-    605,-692,669
-    -500,565,-823
-    -660,373,557
-    -458,-679,-417
-    -488,449,543
-    -626,468,-788
-    338,-750,-386
-    528,-832,-391
-    562,-778,733
-    -938,-730,414
-    543,643,-506
-    -524,371,-870
-    407,773,750
-    -104,29,83
-    378,-903,-323
-    -778,-728,485
-    426,699,580
-    -438,-605,-362
-    -469,-447,-387
-    509,732,623
-    647,635,-688
-    -868,-804,481
-    614,-800,639
-    595,780,-596
+--- scanner 3 ---
+-589,542,597
+605,-692,669
+-500,565,-823
+-660,373,557
+-458,-679,-417
+-488,449,543
+-626,468,-788
+338,-750,-386
+528,-832,-391
+562,-778,733
+-938,-730,414
+543,643,-506
+-524,371,-870
+407,773,750
+-104,29,83
+378,-903,-323
+-778,-728,485
+426,699,580
+-438,-605,-362
+-469,-447,-387
+509,732,623
+647,635,-688
+-868,-804,481
+614,-800,639
+595,780,-596
 
-    --- scanner 4 ---
-    727,592,562
-    -293,-554,779
-    441,611,-461
-    -714,465,-776
-    -743,427,-804
-    -660,-479,-426
-    832,-632,460
-    927,-485,-438
-    408,393,-506
-    466,436,-512
-    110,16,151
-    -258,-428,682
-    -393,719,612
-    -211,-452,876
-    808,-476,-593
-    -575,615,604
-    -485,667,467
-    -680,325,-822
-    -627,-443,-432
-    872,-547,-609
-    833,512,582
-    807,604,487
-    839,-516,451
-    891,-625,532
-    -652,-548,-490
-    30,-46,-14
+--- scanner 4 ---
+727,592,562
+-293,-554,779
+441,611,-461
+-714,465,-776
+-743,427,-804
+-660,-479,-426
+832,-632,460
+927,-485,-438
+408,393,-506
+466,436,-512
+110,16,151
+-258,-428,682
+-393,719,612
+-211,-452,876
+808,-476,-593
+-575,615,604
+-485,667,467
+-680,325,-822
+-627,-443,-432
+872,-547,-609
+833,512,582
+807,604,487
+839,-516,451
+891,-625,532
+-652,-548,-490
+30,-46,-14
   """.trimIndent()
 
   open class Transformation(val f: (Point) -> Point) {
@@ -205,6 +210,11 @@ object Day19 {
         abs(it) * abs(it)
       }.sum()
 
+    fun manhattanDistanceTo(other: Point): Int =
+      listOf(x - other.x, y - other.y, z - other.z).map {
+        abs(it)
+      }.sum()
+
     fun shiftBy(vector: Point): Point =
       this.copy(
         x = this.x + vector.x,
@@ -216,24 +226,28 @@ object Day19 {
       "($x, $y, $z)"
   }
 
+  private fun computeDistancesFromPoints(points: List<Point>, distance: (Point, Point) -> Int): List<Pair<Point, Int>> =
+    points.indices.flatMap { firstBeaconIndex ->
+      (firstBeaconIndex + 1 until points.size).flatMap { secondBeaconIndex ->
+        val first = points[firstBeaconIndex]
+        val second = points[secondBeaconIndex]
+        val distance = distance(first, second)
+        listOf(first to distance, second to distance)
+      }
+    }
+
+  private fun pairwiseDistances(points: List<Point>, distance: (Point, Point) -> Int): List<Int> =
+    computeDistancesFromPoints(points, distance).map { it.second }
+
   data class Scanner(val id: Int, val beacons: List<Point>) {
 
-    val distancesFromPoints: List<Pair<Point, Int>> =
-      beacons.indices.flatMap { firstBeaconIndex ->
-        (firstBeaconIndex + 1 until beacons.size).flatMap { secondBeaconIndex ->
-          val first = beacons[firstBeaconIndex]
-          val second = beacons[secondBeaconIndex]
-          val distance = first.distanceTo(second)
-          listOf(first to distance, second to distance)
-        }
-      }
+    val distancesFromPoints: List<Pair<Point, Int>> = computeDistancesFromPoints(beacons, Point::distanceTo)
 
     /*
      * Fairly native but working approach (will not work in the general case) assuming that distances between
      * points are sufficiently different for the same scanner.
      */
-    val pointToPointDistances: List<Int> =
-      distancesFromPoints.map { it.second }
+    val pointToPointDistances: List<Int> = distancesFromPoints.map { it.second }
 
     override fun toString(): String {
       val beacons = beacons.joinToString("\n")
@@ -266,11 +280,18 @@ $beacons
 
   // At least 12 elements in the intersection
   private const val AdjacentScannerIntersectionSize = 12
+  private const val MinIntersectionSize = 12
   private const val MinimalPointToPointDistancesIntersectionSize = (AdjacentScannerIntersectionSize * (AdjacentScannerIntersectionSize - 1)) / 2
 
   fun haveIntersection(first: Scanner, second: Scanner): Boolean {
-    val intersection = first.pointToPointDistances.intersect(second.pointToPointDistances)
-    return intersection.size >= MinimalPointToPointDistancesIntersectionSize
+    val intersection = first.pointToPointDistances.filter {
+      second.pointToPointDistances.contains(it)
+    }
+    /*
+     * Should be MinimalPointToPointDistancesIntersectionSize but for some reason does not work with the input data =>
+     * separate variable MinIntersectionSize
+     */
+    return intersection.size >= MinIntersectionSize
   }
 
   fun intersectionPoints(first: Scanner, second: Scanner): Pair<Set<Point>, Set<Point>> {
@@ -303,9 +324,9 @@ $beacons
     }
   }
 
-  fun findTransformationToFirst(first: Scanner, second: Scanner): Transformation? {
+  fun findTransformationToFirst(first: Scanner, second: Scanner): Option<Transformation> {
     val (firstScannerPoints, secondScannerPoints) = intersectionPoints(first, second)
-    return findTransformationToFirst(firstScannerPoints, secondScannerPoints)!!
+    return findTransformationToFirst(firstScannerPoints, secondScannerPoints).toOption()
   }
 
   private fun smallestPointOf(points: Set<Point>): Point =
@@ -323,8 +344,11 @@ $beacons
     scanners.flatMap { scanner ->
       scanners.flatMap { otherScanner ->
         if (otherScanner != scanner && haveIntersection(scanner, otherScanner)) {
-          val transformation = findTransformationToFirst(scanner, otherScanner)!!
-          listOf((otherScanner to scanner) to transformation)
+          val transformation = findTransformationToFirst(scanner, otherScanner)
+          when (transformation) {
+            is Some -> listOf((otherScanner to scanner) to transformation.value)
+            is None -> emptyList()
+          }
         } else
           emptyList()
       }
@@ -342,12 +366,12 @@ $beacons
         scanners.filter {
           currentGraph.contains(first to it) && first != it
         }.flatMap { second ->
-          val firstToSecond = currentGraph.get(first to second)!!
+          val firstToSecond = currentGraph[first to second]!!
           scanners.filter {
             currentGraph.contains(second to it) && second != it
           }.flatMap { third ->
             if (!currentGraph.contains(first to third) && first != third) {
-              val secondToThird = currentGraph.get(second to third)!!
+              val secondToThird = currentGraph[second to third]!!
               val firstToThird = secondToThird.compose(firstToSecond)
               listOf((first to third) to firstToThird)
             } else {
@@ -368,34 +392,58 @@ $beacons
     println(edges)
   }
 
-  // An improved version over collectBeacons
-  fun joinBeacons(scanners: List<Scanner>): Set<Point> {
+  private fun findTransformationsToFirst(scanners: List<Scanner>): List<Pair<Scanner, Transformation>> {
     val scannerGraph = buildScannerGraph(scanners)
-    showGraph(scannerGraph)
-
     val scannerGraphClosure = buildClosure(scanners, scannerGraph)
-    showGraph(scannerGraphClosure)
-
     val firstScanner = scanners.find { it.id == 0 }!!
     val scannersToJoin = scanners.filter { it.id != 0 }
 
+    return scannersToJoin.map { scanner ->
+      val transformation = scannerGraphClosure[scanner to firstScanner]!!
+      scanner to transformation
+    }
+  }
+
+  // An improved version over collectBeacons
+  fun joinBeacons(scanners: List<Scanner>): Set<Point> {
+    val firstScanner = scanners.find { it.id == 0 }!!
+    val transformationsToFirst = findTransformationsToFirst(scanners)
+
     val firstScannerBeacons = firstScanner.beacons.toSet()
-    val otherTransformedBeacons = scannersToJoin.map { scanner ->
-      val transformation = scannerGraphClosure.get(scanner to firstScanner)!!
-      val transformedPoints = scanner.beacons.map {
-        transformation.apply(it)
+    val otherTransformedBeacons = transformationsToFirst.map {
+      val scanner = it.first
+      val transformation = it.second
+      scanner.beacons.map { p ->
+        transformation.apply(p)
       }.toSet()
-      transformedPoints
     }.flatten().toSet()
 
     return firstScannerBeacons.union(otherTransformedBeacons)
   }
 
+  private fun findScannerCoordinates(scanners: List<Scanner>): List<Point> {
+    val transformationsToFirst = findTransformationsToFirst(scanners)
+    val scannerPoint = Point(0, 0, 0)
+
+    val transformedScanners = transformationsToFirst.map {
+      val transformationToFirst = it.second
+      transformationToFirst.apply(scannerPoint)
+    }
+    return listOf(scannerPoint) + transformedScanners
+  }
+
   fun part1(scanners: List<Scanner>): Int =
     joinBeacons(scanners).size
+
+  fun part2(scanners: List<Scanner>): Int {
+    val scanners = findScannerCoordinates(scanners)
+    val distances = pairwiseDistances(scanners, Point::manhattanDistanceTo)
+    return distances.maxOrNull()!!
+  }
 }
 
 fun main() {
   val scanners = Day19.parse(Day19.input)
   println(Day19.part1(scanners))
+  println(Day19.part2(scanners))
 }
