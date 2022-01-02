@@ -288,10 +288,15 @@ $beacons
       second.pointToPointDistances.contains(it)
     }
     /*
-     * Should be MinimalPointToPointDistancesIntersectionSize but for some reason does not work with the input data =>
-     * separate variable MinIntersectionSize
+     * Should be MinimalPointToPointDistancesIntersectionSize but for some reason does not work with the "real" input data =>
+     * separate variable MinIntersectionSize. To make the solution work with the "real" input data use the following check.
+     *
+     * return intersection.size >= MinIntersectionSize
+     *
+     * MinimalPointToPointDistancesIntersectionSize works on the test input from the task description though
+     * https://adventofcode.com/2021/day/19 Error in the "real" input data?
      */
-    return intersection.size >= MinIntersectionSize
+    return intersection.size >= MinimalPointToPointDistancesIntersectionSize
   }
 
   fun intersectionPoints(first: Scanner, second: Scanner): Pair<Set<Point>, Set<Point>> {
