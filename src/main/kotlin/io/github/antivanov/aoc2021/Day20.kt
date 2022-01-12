@@ -22,31 +22,62 @@ object Day20 {
 ..###
   """
 
-  data class Point(val x: Int, val y: Int)
+  data class Point(val x: Int, val y: Int) {
+
+    fun relatedPointGroup(): List<Point> =
+      (y - 1 .. y + 1).flatMap { y ->
+        (x - 1 .. x + 1).map { x ->
+          Point(x, y)
+        }
+      }
+  }
 
   data class Key(val key: String) {
 
-    private val characters = key.toList()
-
-    fun decode(value: Int): Char =
-      characters[value]
+    val characters = key.toList()
 
     override fun toString(): String =
       key
   }
 
-  data class Plane(val pixels: Set<Point>) {
-    private val xs = pixels.map { it.x }
-    private val ys= pixels.map { it.y }
+  data class Plane(val lightPoints: Set<Point>) {
+    private val xs = lightPoints.map { it.x }
+    private val ys= lightPoints.map { it.y }
     private val fromX = xs.minOrNull()!!
     private val toX = xs.maxOrNull()!!
     private val fromY = ys.minOrNull()!!
     private val toY = ys.maxOrNull()!!
 
+    private fun isLightPoint(point: Point): Boolean =
+      lightPoints.contains(point)
+
+    private fun computeGroupValue(group: List<Point>): Int {
+      val digits = group.map {
+        if (isLightPoint(it)) 1
+        else 0
+      }
+      return digits.joinToString("").toInt(2)
+    }
+
+    fun enhance(key: Key): Plane {
+      val enhancedLightPoints = (fromY - 1..toY + 1).flatMap { y ->
+        (fromX - 1..toX + 1).map { x ->
+          val point = Point(x, y)
+          val pointGroup = point.relatedPointGroup()
+          val pointGroupValue = computeGroupValue(pointGroup)
+          if (key.characters[pointGroupValue] == '#')
+            Some(point)
+          else
+            None
+        }.flattenOption()
+      }.toSet()
+      return Plane(enhancedLightPoints)
+    }
+
     override fun toString(): String =
       (fromY .. toY).map { y ->
         (fromX .. toX).map { x ->
-          if (pixels.contains(Point(x, y)))
+          if (lightPoints.contains(Point(x, y)))
             '#'
           else
             '.'
@@ -82,5 +113,10 @@ object Day20 {
 fun main() {
   val (key, initialPlane) = Day20.parse(Day20.input)
   println(key)
+  println()
   println(initialPlane)
+
+  println()
+  val planeEnhancedOnce = initialPlane.enhance(key)
+  println(planeEnhancedOnce)
 }
