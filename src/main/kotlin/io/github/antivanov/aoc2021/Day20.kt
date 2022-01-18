@@ -1,6 +1,7 @@
 package io.github.antivanov.aoc2021
 
 import arrow.core.None
+import arrow.core.Option
 import arrow.core.Some
 import arrow.core.flattenOption
 import io.github.antivanov.aoc2021.util.ParsingUtils
@@ -36,6 +37,12 @@ object Day20 {
 
     val characters = key.toList()
 
+    fun decode(point: Point, pointGroupValue: Int): Option<Point> =
+      if (characters[pointGroupValue] == '#')
+        Some(point)
+      else
+        None
+
     override fun toString(): String =
       key
   }
@@ -65,10 +72,7 @@ object Day20 {
           val point = Point(x, y)
           val pointGroup = point.relatedPointGroup()
           val pointGroupValue = computeGroupValue(pointGroup)
-          if (key.characters[pointGroupValue] == '#')
-            Some(point)
-          else
-            None
+          key.decode(point, pointGroupValue)
         }.flattenOption()
       }.toSet()
       return Plane(enhancedLightPoints)
@@ -119,4 +123,8 @@ fun main() {
   println()
   val planeEnhancedOnce = initialPlane.enhance(key)
   println(planeEnhancedOnce)
+
+  println()
+  val planeEnhancedTwice = planeEnhancedOnce.enhance(key)
+  println(planeEnhancedTwice)
 }
