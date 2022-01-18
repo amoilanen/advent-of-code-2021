@@ -89,7 +89,7 @@ object Day20 {
       }.joinToString("\n")
   }
 
-  fun parse(input: String): Pair<Key, Plane> {
+  fun parseInput(input: String): Pair<Key, Plane> {
     val lines = input.split("\n").map { it.trim() }
     val keyAndPlaneInputs = ParsingUtils.splitByElement(lines, "")
     val key = parseKey(keyAndPlaneInputs[0])
@@ -112,19 +112,16 @@ object Day20 {
     }.toSet()
     return Plane(points)
   }
+
+  fun part1(key: Key, initialPlane: Plane): Int {
+    val finalPlane = (1..2).fold(initialPlane) { plane, _ ->
+      plane.enhance(key)
+    }
+    return finalPlane.lightPoints.size
+  }
 }
 
 fun main() {
-  val (key, initialPlane) = Day20.parse(Day20.input)
-  println(key)
-  println()
-  println(initialPlane)
-
-  println()
-  val planeEnhancedOnce = initialPlane.enhance(key)
-  println(planeEnhancedOnce)
-
-  println()
-  val planeEnhancedTwice = planeEnhancedOnce.enhance(key)
-  println(planeEnhancedTwice)
+  val (key, initialPlane) = Day20.parseInput(Day20.input)
+  println(Day20.part1(key, initialPlane))
 }
