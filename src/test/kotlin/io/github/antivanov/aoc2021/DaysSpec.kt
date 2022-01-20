@@ -590,4 +590,10 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     val (key, initialPlane) = day20TestInput
     assertEquals(35, Day20.part1(key, initialPlane))
   }
+
+  @Test
+  fun test_day20_part2() {
+    val (key, initialPlane) = day20TestInput
+    assertEquals(3351, Day20.part2(key, initialPlane))
+  }
 }

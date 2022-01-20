@@ -129,21 +129,22 @@ object Day20 {
     return Plane(points, isOutsideLight = false)
   }
 
-  fun part1(key: Key, initialPlane: Plane): Int {
-    val finalPlane = (1..2).fold(initialPlane) { plane, step ->
-      println()
-      println("step $step")
-      println()
-      val enhancedPlane = plane.enhance(key)
-      println(enhancedPlane)
-      println()
-      enhancedPlane
+  private fun enhancePlaneTimes(key: Key, initialPlane: Plane, times: Int): Plane =
+    (1..times).fold(initialPlane) { plane, _ ->
+      plane.enhance(key)
     }
-    return finalPlane.lightPoints.size
+
+  fun part1(key: Key, initialPlane: Plane): Int {
+    return enhancePlaneTimes(key, initialPlane, 2).lightPoints.size
+  }
+
+  fun part2(key: Key, initialPlane: Plane): Int {
+    return enhancePlaneTimes(key, initialPlane, 50).lightPoints.size
   }
 }
 
 fun main() {
   val (key, initialPlane) = Day20.parseInput(Day20.input)
   println(Day20.part1(key, initialPlane))
+  println(Day20.part2(key, initialPlane))
 }
