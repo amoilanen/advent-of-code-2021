@@ -21,7 +21,7 @@ object Day20 {
 ##..#
 ..#..
 ..###
-  """
+"""
 
   data class Point(val x: Int, val y: Int) {
 
@@ -35,19 +35,27 @@ object Day20 {
 
   data class Key(val key: String) {
 
-    val characters = key.toList()
+    private val characters = key.toList()
 
     fun decode(point: Point, pointGroupValue: Int): Option<Point> =
-      if (characters[pointGroupValue] == '#')
+      if (characters[pointGroupValue] == LightPointSymbol)
         Some(point)
       else
         None
 
+    val isFirstLight = characters.first() == LightPointSymbol
+    val isLastLight = characters.last() == LightPointSymbol
+
     override fun toString(): String =
       key
+
+    companion object {
+      const val LightPointSymbol = '#'
+      const val DarkPointSymbol = '.'
+    }
   }
 
-  data class Plane(val lightPoints: Set<Point>) {
+  data class Plane(val lightPoints: Set<Point>, val isOutsideLight: Boolean) {
     private val xs = lightPoints.map { it.x }
     private val ys= lightPoints.map { it.y }
     private val fromX = xs.minOrNull()!!
@@ -55,8 +63,11 @@ object Day20 {
     private val fromY = ys.minOrNull()!!
     private val toY = ys.maxOrNull()!!
 
+    private fun isOutsidePoint(point: Point): Boolean =
+      point.x !in (fromX..toX) || point.y !in (fromY..toY)
+
     private fun isLightPoint(point: Point): Boolean =
-      lightPoints.contains(point)
+      lightPoints.contains(point) || (isOutsidePoint(point) && isOutsideLight)
 
     private fun computeGroupValue(group: List<Point>): Int {
       val digits = group.map {
@@ -75,16 +86,21 @@ object Day20 {
           key.decode(point, pointGroupValue)
         }.flattenOption()
       }.toSet()
-      return Plane(enhancedLightPoints)
+      val updatedIsOutsideLight = if (isOutsideLight)
+        key.isLastLight
+      else
+        key.isFirstLight
+
+      return Plane(enhancedLightPoints, isOutsideLight = updatedIsOutsideLight)
     }
 
     override fun toString(): String =
       (fromY .. toY).map { y ->
         (fromX .. toX).map { x ->
           if (lightPoints.contains(Point(x, y)))
-            '#'
+            Key.LightPointSymbol
           else
-            '.'
+            Key.DarkPointSymbol
         }.joinToString("")
       }.joinToString("\n")
   }
@@ -104,18 +120,24 @@ object Day20 {
     val points = input.indices.flatMap { y ->
       val row = input[y]
       row.indices.map { x ->
-        if (row[x] == '#')
+        if (row[x] == Key.LightPointSymbol)
           Some(Point(x, y))
         else
           None
       }.flattenOption()
     }.toSet()
-    return Plane(points)
+    return Plane(points, isOutsideLight = false)
   }
 
   fun part1(key: Key, initialPlane: Plane): Int {
-    val finalPlane = (1..2).fold(initialPlane) { plane, _ ->
-      plane.enhance(key)
+    val finalPlane = (1..2).fold(initialPlane) { plane, step ->
+      println()
+      println("step $step")
+      println()
+      val enhancedPlane = plane.enhance(key)
+      println(enhancedPlane)
+      println()
+      enhancedPlane
     }
     return finalPlane.lightPoints.size
   }
