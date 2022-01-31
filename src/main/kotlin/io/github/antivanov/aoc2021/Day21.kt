@@ -15,16 +15,16 @@ object Day21 {
     return Pair(positions[0], positions[1])
   }
 
-  private val BoardSize = 10
+  private const val BoardSize = 10
 
   fun repeatingRemainders(): List<Int> =
     (1 until (BoardSize * 3) step 3).map {
       3 * (it + 1) % BoardSize
     }
 
-  fun repeatingScores(initialPosition: Int, repeatingReminders: List<Int>): List<Int> {
-    // At most BoardSize different remainders possible
-    val positionsAndReminders = (1..BoardSize).fold(emptyList<Pair<Int, Int>>()) { positionsSoFar, _ ->
+  private fun repeatingScores(initialPosition: Int, repeatingReminders: List<Int>): List<Int> {
+    // At most BoardSize different positions possible in the beginning of the repeating reminders series
+    val positionsAndReminders = (0..BoardSize).fold(emptyList<Pair<Int, Int>>()) { positionsSoFar, _ ->
       repeatingReminders.fold(positionsSoFar) { positions, remainder ->
         val lastPosition = if (positions.isEmpty())
           initialPosition
@@ -50,58 +50,31 @@ object Day21 {
     return repeatingScores
   }
 
-  fun scoreSums(scores: List<Int>): List<Int> =
-    scores.fold(listOf<Int>(0)) { acc, current ->
-      listOf(acc.first() + current) + acc
+  private fun scoreSums(scores: List<Int>): List<Int> =
+    scores.fold(listOf(0)) { sums, current ->
+      listOf(sums.first() + current) + sums
     }.reversed().drop(1)
 
   fun movesToReachScore(initialPosition: Int, repeatingReminders: List<Int>, score: Int): Int {
-    val scoresPeriod = repeatingScores(initialPosition, repeatingReminders)
+    val scoresCycle = repeatingScores(initialPosition, repeatingReminders)
+    val totalScoresInsideCycle = scoreSums(scoresCycle)
+    val cycleTotalScore = scoresCycle.sum()
 
-    val totalScoresInsidePeriod = scoreSums(scoresPeriod)
-    val periodTotalScore = scoresPeriod.sum()
+    println()
+    println("Scores cycle and total score:")
+    println(scoresCycle)
+    println(totalScoresInsideCycle)
+    println(cycleTotalScore)
+    println()
 
-    val fullPeriodsToReachScore = score / periodTotalScore
-    val remainingScoreAfterLastFullPeriod = score % periodTotalScore
+    val fullCyclesToReachScore = score / cycleTotalScore
+    val stillRemainingScore = score % cycleTotalScore
 
-    val remainingScoresInsidePeriodUntilScore = totalScoresInsidePeriod.indexOfFirst {
-      it >= remainingScoreAfterLastFullPeriod
+    val remainingScoresInsidePeriodUntilScore = totalScoresInsideCycle.indexOfFirst {
+      it >= stillRemainingScore
     } + 1
     //FIXME: Return the full number of moves also counting the moves of the other player
-    return fullPeriodsToReachScore * scoresPeriod.size + remainingScoresInsidePeriodUntilScore
-  }
-
-  @Deprecated("Old version which might be useful for debugging still")
-  fun movesToReachScoreIncomplete(initialPosition: Int, repeatingReminders: List<Int>, score: Int): Int {
-    // At most 10 different remainders possible
-    val positionsAndReminders = (1..10).fold(emptyList<Pair<Int, Int>>()) { positionsSoFar, _ ->
-      repeatingReminders.fold(positionsSoFar) { positions, remainder ->
-        val lastPosition = if (positions.isEmpty())
-          initialPosition
-        else
-          positions.first().first
-        val newPosition = (lastPosition + remainder) % 10 // position 0 is same as 10 - it is "scored" differently
-        listOf(newPosition to remainder) + positions
-      }
-    }.reversed()
-
-    println(positionsAndReminders)
-    println(positionsAndReminders.size)
-
-    val firstPositionAndRemainder = positionsAndReminders.first()
-    val firstRepetitionIndex = positionsAndReminders.subList(1, positionsAndReminders.size).indexOfFirst {
-      it == firstPositionAndRemainder
-    } + 1
-    println(firstRepetitionIndex)
-    val allPossiblePositions = positionsAndReminders.subList(0, firstRepetitionIndex)
-    println(allPossiblePositions)
-
-    println(repeatingScores(initialPosition, repeatingReminders))
-    // TODO: Compute the different scores for positions
-    // TODO: Re-factor the utility function from the current function to compute repeating scores
-
-    //TODO: Implement to solve part 1
-    return 0
+    return fullCyclesToReachScore * scoresCycle.size + remainingScoresInsidePeriodUntilScore
   }
 
   fun scoreAfterNumberOfMoves(repeatingReminders: List<Int>, movesNumber: Int): Int {
