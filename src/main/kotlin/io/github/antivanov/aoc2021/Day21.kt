@@ -18,11 +18,24 @@ object Day21 {
   private const val BoardSize = 10
   private const val DieCastsPerMove = 3
 
-  // For a deterministic repeating die: 1, 2, 3, 4, 5, ..., 99, 100, 101, 102, ...
+  // For a deterministic repeating die: 1, 2, 3, 4, 5, ..., 99, 100, 1, 2, ...
   fun repeatingRemainders(): List<Int> =
     (1 until (BoardSize * DieCastsPerMove) step DieCastsPerMove).map {
       DieCastsPerMove * (it + 1) % BoardSize
     }
+
+  fun repeatingRemindersPerPlayer(): Pair<List<Int>, List<Int>> {
+    val remainders = repeatingRemainders()
+    val remaindersWithIndices = remainders.indices.zip(remainders)
+    val (firstRemainders, secondRemainders) = remaindersWithIndices.partition {
+      it.first % 2 == 0
+    }.toList().map { playerRemainders ->
+      playerRemainders.map {
+        it.second
+      }
+    }
+    return firstRemainders to secondRemainders
+  }
 
   private fun repeatingScores(initialPosition: Int, repeatingReminders: List<Int>): List<Int> {
     // At most BoardSize different positions possible in the beginning of the repeating reminders series
@@ -41,8 +54,8 @@ object Day21 {
     val firstRepetitionIndex = positionsAndReminders.subList(1, positionsAndReminders.size).indexOfFirst {
       it == firstPositionAndRemainder
     } + 1
-    val allPossibleScores = positionsAndReminders.subList(0, firstRepetitionIndex)
-    val repeatingScores = allPossibleScores.map {
+    val repeatingPositionsAndRemainders = positionsAndReminders.subList(0, firstRepetitionIndex)
+    val repeatingScores = repeatingPositionsAndRemainders.map {
       val position = it.first
       if (position == 0)
         BoardSize
@@ -57,18 +70,18 @@ object Day21 {
       listOf(sums.first() + current) + sums
     }.reversed().drop(1)
 
-  fun movesToReachScore(playerInitialPosition: Int, repeatingReminders: List<Int>, score: Int, movesBeforeThisPlayer: Int): Int {
-    val scoresCycle = repeatingScores(playerInitialPosition, repeatingReminders)
-    val totalScoresInsideCycle = scoreSums(scoresCycle)
+  fun movesNumberToReachScore(playerInitialPosition: Int, repeatingRemainders: List<Int>, score: Int, movesBeforeThisPlayer: Int): Int {
+    val scoresCycle = repeatingScores(playerInitialPosition, repeatingRemainders)
     val cycleTotalScore = scoresCycle.sum()
 
     val fullCyclesToReachScore = score / cycleTotalScore
     val stillRemainingScore = score % cycleTotalScore
 
-    val remainingScoresInsidePeriodUntilScore = totalScoresInsideCycle.indexOfFirst {
+    val totalScoresInsideCycle = scoreSums(scoresCycle)
+    val remainingMoves = totalScoresInsideCycle.indexOfFirst {
       it >= stillRemainingScore
     } + 1
-    val playerMoves = fullCyclesToReachScore * scoresCycle.size + remainingScoresInsidePeriodUntilScore
+    val playerMoves = fullCyclesToReachScore * scoresCycle.size + remainingMoves
     val otherPlayerMoves = playerMoves - 1 + movesBeforeThisPlayer
     return playerMoves + otherPlayerMoves
   }
@@ -76,34 +89,65 @@ object Day21 {
   fun dieRollCountForMoveCount(movesCount: Int): Int =
     movesCount * DieCastsPerMove
 
-  fun scoreAfterNumberOfMoves(repeatingReminders: List<Int>, movesNumber: Int): Int {
-    //TODO: Implement to solve part 1
-    return 0
+  fun playerScoreAfterNumberOfMoves(playerInitialPosition: Int, repeatingRemainders: List<Int>, movesNumber: Int): Int {
+    //FIXME: Fix the computation of the score after a given number of moves for a given player
+    println("playerScoreAfterNumberOfMoves:begin")
+    val scoresCycle = repeatingScores(playerInitialPosition, repeatingRemainders)
+    println(scoresCycle)
+    val cycleTotalScore = scoresCycle.sum()
+    println(cycleTotalScore)
+
+    val fullCycles = movesNumber / scoresCycle.size
+    println(fullCycles)
+    val fullCycleScore = fullCycles * cycleTotalScore
+
+    val remainingMoves = movesNumber % scoresCycle.size
+    val remainingScore = scoresCycle.subList(0, remainingMoves).sum()
+
+    println("playerScoreAfterNumberOfMoves:end")
+    return fullCycleScore + remainingScore
+  }
+
+  fun part1(input: String): Int {
+    val (firstPosition, secondPosition) = parseInput(input)
+    val (firstRemainders, secondRemainders) = repeatingRemindersPerPlayer()
+
+    val firstMovesNumber = movesNumberToReachScore(firstPosition, firstRemainders, 1000, movesBeforeThisPlayer = 0)
+    val secondMovesNumber = movesNumberToReachScore(secondPosition, secondRemainders, 1000, movesBeforeThisPlayer = 1)
+
+    val playerRemainders = mapOf(
+      0 to firstRemainders,
+      1 to secondRemainders
+    )
+    val playerMoves = mapOf(
+      0 to firstMovesNumber,
+      1 to secondMovesNumber
+    )
+    val playerPositions = mapOf(
+      0 to firstPosition,
+      1 to secondPosition
+    )
+    val movesBeforePlayer = mapOf(
+      0 to 0,
+      1 to 1
+    )
+    val winningPlayer = if (firstMovesNumber > secondMovesNumber) 1 else 0
+    val loosingPlayer = (winningPlayer + 1) % 2
+    val winningMovesNumber = playerMoves.values.minOrNull()!!
+
+    val loosingPlayerMovesNumber = winningMovesNumber - movesBeforePlayer[loosingPlayer]!!
+    val loosingPlayerScore = playerScoreAfterNumberOfMoves(playerPositions[loosingPlayer]!!, playerRemainders[loosingPlayer]!!, loosingPlayerMovesNumber)
+
+    println(loosingPlayer)
+    println(loosingPlayerMovesNumber)
+    println(winningMovesNumber)
+    println(loosingPlayerScore)
+
+    val dieRollCount = dieRollCountForMoveCount(secondMovesNumber)
+    return dieRollCount * loosingPlayerScore
   }
 }
 
 fun main() {
-  val (firstPosition, secondPosition) = Day21.parseInput(Day21.input)
-  println(firstPosition)
-  println(secondPosition)
-  val remainders = Day21.repeatingRemainders()
-  println(remainders)
-  val remaindersWithIndices = remainders.indices.zip(remainders)
-  val (firstRemainders, secondRemainders) = remaindersWithIndices.partition {
-    it.first % 2 == 0
-  }.toList().map { playerRemainders ->
-    playerRemainders.map {
-      it.second
-    }
-  }
-  println(firstRemainders)
-  println(secondRemainders)
-
-  val firstMoves = Day21.movesToReachScore(firstPosition, firstRemainders, 1000, movesBeforeThisPlayer = 0)
-  println(firstMoves)
-  println(Day21.dieRollCountForMoveCount(firstMoves))
-
-  val secondMoves = Day21.movesToReachScore(secondPosition, secondRemainders, 1000, movesBeforeThisPlayer = 1)
-  println(secondMoves)
-  println(Day21.dieRollCountForMoveCount(secondMoves))
+  println(Day21.part1(Day21.input))
 }
