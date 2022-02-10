@@ -596,4 +596,16 @@ gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
     val (key, initialPlane) = day20TestInput
     assertEquals(3351, Day20.part2(key, initialPlane))
   }
+
+  val day21Input = Day21.parseInput("""
+Player 1 starting position: 4
+Player 2 starting position: 8
+""".trimIndent()
+  )
+
+  @Test
+  fun test_day21_part1() {
+    val (firstPosition, secondPosition) = day21Input
+    assertEquals(739785, Day21.part1(firstPosition, secondPosition))
+  }
 }

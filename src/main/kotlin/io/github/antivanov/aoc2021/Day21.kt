@@ -1,5 +1,7 @@
 package io.github.antivanov.aoc2021
 
+import kotlin.math.ceil
+
 object Day21 {
 
   val input = """
@@ -89,27 +91,21 @@ object Day21 {
   fun dieRollCountForMoveCount(movesCount: Int): Int =
     movesCount * DieCastsPerMove
 
-  fun playerScoreAfterNumberOfMoves(playerInitialPosition: Int, repeatingRemainders: List<Int>, movesNumber: Int): Int {
-    //FIXME: Fix the computation of the score after a given number of moves for a given player
-    println("playerScoreAfterNumberOfMoves:begin")
+  fun playerScoreAfterNumberOfMoves(playerInitialPosition: Int, repeatingRemainders: List<Int>, movesNumber: Int, movesBeforeThisPlayer: Int): Int {
+    val playerMovesNumber = ceil((movesNumber - movesBeforeThisPlayer).toDouble() / 2).toInt()
     val scoresCycle = repeatingScores(playerInitialPosition, repeatingRemainders)
-    println(scoresCycle)
     val cycleTotalScore = scoresCycle.sum()
-    println(cycleTotalScore)
 
-    val fullCycles = movesNumber / scoresCycle.size
-    println(fullCycles)
+    val fullCycles = playerMovesNumber / scoresCycle.size
     val fullCycleScore = fullCycles * cycleTotalScore
 
-    val remainingMoves = movesNumber % scoresCycle.size
+    val remainingMoves = playerMovesNumber % scoresCycle.size
     val remainingScore = scoresCycle.subList(0, remainingMoves).sum()
 
-    println("playerScoreAfterNumberOfMoves:end")
     return fullCycleScore + remainingScore
   }
 
-  fun part1(input: String): Int {
-    val (firstPosition, secondPosition) = parseInput(input)
+  fun part1(firstPosition: Int, secondPosition: Int): Int {
     val (firstRemainders, secondRemainders) = repeatingRemindersPerPlayer()
 
     val firstMovesNumber = movesNumberToReachScore(firstPosition, firstRemainders, 1000, movesBeforeThisPlayer = 0)
@@ -135,19 +131,14 @@ object Day21 {
     val loosingPlayer = (winningPlayer + 1) % 2
     val winningMovesNumber = playerMoves.values.minOrNull()!!
 
-    val loosingPlayerMovesNumber = winningMovesNumber - movesBeforePlayer[loosingPlayer]!!
-    val loosingPlayerScore = playerScoreAfterNumberOfMoves(playerPositions[loosingPlayer]!!, playerRemainders[loosingPlayer]!!, loosingPlayerMovesNumber)
+    val loosingPlayerScore = playerScoreAfterNumberOfMoves(playerPositions[loosingPlayer]!!, playerRemainders[loosingPlayer]!!, winningMovesNumber, movesBeforePlayer[loosingPlayer]!!)
+    val dieRollCount = dieRollCountForMoveCount(winningMovesNumber)
 
-    println(loosingPlayer)
-    println(loosingPlayerMovesNumber)
-    println(winningMovesNumber)
-    println(loosingPlayerScore)
-
-    val dieRollCount = dieRollCountForMoveCount(secondMovesNumber)
     return dieRollCount * loosingPlayerScore
   }
 }
 
 fun main() {
-  println(Day21.part1(Day21.input))
+  val (firstPosition, secondPosition) = Day21.parseInput(Day21.input)
+  println(Day21.part1(firstPosition, secondPosition))
 }
