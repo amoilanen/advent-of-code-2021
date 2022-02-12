@@ -5,8 +5,8 @@ import kotlin.math.ceil
 object Day21 {
 
   val input = """
-    Player 1 starting position: 4
-    Player 2 starting position: 8
+Player 1 starting position: 4
+Player 2 starting position: 8
   """.trimIndent()
 
   fun parseInput(input: String): Pair<Int, Int> {
@@ -136,9 +136,56 @@ object Day21 {
 
     return dieRollCount * loosingPlayerScore
   }
+
+  fun forwardMoveFrequencies(): Map<Int, Int> {
+    val diePossibleRolls = (1..3).toList()
+
+    val forwardMoves = diePossibleRolls.flatMap { first ->
+      diePossibleRolls.flatMap { second ->
+        diePossibleRolls.map { third ->
+          first + second + third
+        }
+      }
+    }
+    return forwardMoves.groupBy { it }.mapValues { it.value.size }
+  }
+
+  val forwardMoves = forwardMoveFrequencies()
+
+  data class PlayerState(val position: Int, val scoreLeft: Int)
+
+  fun winCounts(currentToMove: PlayerState, nextToMove: PlayerState): Pair<Long, Long> =
+    if (nextToMove.scoreLeft <= 0)
+      0L to 1L
+    else {
+      val winCountsPerPossibleMove = forwardMoves.map { moveAndFrequency ->
+        val move = moveAndFrequency.key
+        val frequency = moveAndFrequency.value
+        val newPosition = (currentToMove.position + move) % BoardSize
+        val scoreIncrement = if (newPosition == 0)
+          BoardSize
+        else
+          newPosition
+        val updatedScoreLeft = currentToMove.scoreLeft - scoreIncrement
+        val winsGivenMove = winCounts(nextToMove, currentToMove.copy(position = newPosition, scoreLeft = updatedScoreLeft))
+        (winsGivenMove.first * frequency to winsGivenMove.second * frequency)
+      }
+      winCountsPerPossibleMove.fold(0L to 0L) { acc, count ->
+        (acc.first + count.first) to (acc.second + count.second)
+      }
+    }
+
+  // Part 2
+  // https://www.reddit.com/r/adventofcode/comments/rl6p8y/2021_day_21_solutions/hpkxh2c/?utm_source=share&utm_medium=web2x&context=3
 }
 
 fun main() {
   val (firstPosition, secondPosition) = Day21.parseInput(Day21.input)
   println(Day21.part1(firstPosition, secondPosition))
+  println(Day21.forwardMoveFrequencies())
+
+  val scoreToReach = 21
+  val firstPlayer = Day21.PlayerState(firstPosition, scoreToReach)
+  val secondPlayer = Day21.PlayerState(secondPosition, scoreToReach)
+  println(Day21.winCounts(firstPlayer, secondPlayer))
 }
