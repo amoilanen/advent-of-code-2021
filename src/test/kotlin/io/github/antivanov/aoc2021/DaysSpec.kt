@@ -608,4 +608,10 @@ Player 2 starting position: 8
     val (firstPosition, secondPosition) = day21Input
     assertEquals(739785, Day21.part1(firstPosition, secondPosition))
   }
+
+  @Test
+  fun test_day21_part2() {
+    val (firstPosition, secondPosition) = day21Input
+    assertEquals(444356092776315, Day21.part2(firstPosition, secondPosition))
+  }
 }

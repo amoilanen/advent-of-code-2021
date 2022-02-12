@@ -168,24 +168,24 @@ Player 2 starting position: 8
           newPosition
         val updatedScoreLeft = currentToMove.scoreLeft - scoreIncrement
         val winsGivenMove = winCounts(nextToMove, currentToMove.copy(position = newPosition, scoreLeft = updatedScoreLeft))
-        (winsGivenMove.first * frequency to winsGivenMove.second * frequency)
+        (winsGivenMove.second * frequency to winsGivenMove.first * frequency)
       }
       winCountsPerPossibleMove.fold(0L to 0L) { acc, count ->
         (acc.first + count.first) to (acc.second + count.second)
       }
     }
 
-  // Part 2
-  // https://www.reddit.com/r/adventofcode/comments/rl6p8y/2021_day_21_solutions/hpkxh2c/?utm_source=share&utm_medium=web2x&context=3
+  fun part2(firstPosition: Int, secondPosition: Int): Long {
+    val scoreToReach = 21
+    val firstPlayer = PlayerState(firstPosition, scoreToReach)
+    val secondPlayer = PlayerState(secondPosition, scoreToReach)
+    val counts = winCounts(firstPlayer, secondPlayer)
+    return counts.toList().maxOrNull()!!
+  }
 }
 
 fun main() {
   val (firstPosition, secondPosition) = Day21.parseInput(Day21.input)
   println(Day21.part1(firstPosition, secondPosition))
-  println(Day21.forwardMoveFrequencies())
-
-  val scoreToReach = 21
-  val firstPlayer = Day21.PlayerState(firstPosition, scoreToReach)
-  val secondPlayer = Day21.PlayerState(secondPosition, scoreToReach)
-  println(Day21.winCounts(firstPlayer, secondPlayer))
+  println(Day21.part2(firstPosition, secondPosition))
 }
