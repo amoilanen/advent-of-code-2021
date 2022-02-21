@@ -1,6 +1,8 @@
 package io.github.antivanov.aoc2021
 
-import io.github.antivanov.aoc2021.util.ParsingUtils
+import arrow.core.None
+import arrow.core.Some
+import arrow.core.toOption
 
 object Day22 {
 
@@ -23,9 +25,14 @@ object Day22 {
     }
   }
 
+  data class Point(val x: Int, val y: Int, val z: Int)
+
   data class Cube(val xs: IntRange, val ys: IntRange, val zs: IntRange)
 
-  data class RebootStep(val action: StepAction, val where: Cube)
+  data class RebootStep(val action: StepAction, val where: Cube) {
+    fun isAffecting(point: Point): Boolean =
+      point.x in where.xs && point.y in where.ys && point.z in where.zs
+  }
 
   fun parseInput(input: String): List<RebootStep> {
     val lines = input.split("\n").map { it.trim() }
@@ -38,11 +45,38 @@ object Day22 {
       }
       RebootStep(action, Cube(xs, ys, zs))
     }
-    return steps
+    return steps.reversed()
+  }
+
+  fun isOn(point: Point, rebootSteps: List<RebootStep>): Boolean {
+    val lastStep = rebootSteps.find { it.isAffecting(point) }.toOption()
+    return when (lastStep) {
+      is Some -> lastStep.value.action == StepAction.ON
+      is None -> false
+    }
+  }
+
+  fun countPointsBeingOn(points: Cube, rebootSteps: List<RebootStep>): Int =
+    points.xs.fold(0) { xCount, x ->
+      points.ys.fold(xCount) { yCount, y ->
+        points.zs.fold(yCount) { zCount, z ->
+          val currentPoint = Point(x, y, z)
+          if (isOn(currentPoint, rebootSteps))
+            zCount + 1
+          else
+            zCount
+        }
+      }
+    }
+
+  fun part1(rebootSteps: List<RebootStep>): Int {
+    val cubeDimension = -50..50
+    return countPointsBeingOn(Cube(cubeDimension, cubeDimension, cubeDimension), rebootSteps)
   }
 }
 
 fun main() {
   val steps = Day22.parseInput(Day22.input)
   println(steps)
+  println(Day22.part1(steps))
 }
