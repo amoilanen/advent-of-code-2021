@@ -84,7 +84,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
   data class Point(val x: Int, val y: Int, val z: Int)
 
   data class Cube(val xs: IntRange, val ys: IntRange, val zs: IntRange) {
-    val leftBottom: Point = Point(xs.first, ys.first, zs.first)
+    val middlePoint: Point = Point((xs.first + xs.last) / 2, (ys.first + ys.last) / 2, (zs.first + zs.last) / 2)
     //TODO: Check the border conditions more accurately
     val pointCount: Long = (xs.last - xs.first + 1).toLong() * (ys.last - ys.first + 1) * (zs.last - zs.first + 1)
   }
@@ -134,10 +134,30 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
     return countPointsBeingOn(Cube(cubeDimension, cubeDimension, cubeDimension), rebootSteps)
   }
 
+  //TODO: Implement correct algorithm for intersecting ranges
+  fun intersectRanges(ranges: List<IntRange>): List<IntRange> {
+    val starts = ranges.map { it.first }
+    val ends = ranges.map { it.last }
+    val start = starts.minOrNull()!!
+    val end = ends.maxOrNull()!!
+    val restOfStarts = starts.filter { it != start }
+    val restOfEnds = ends.filter { it != end }
+
+    val allStartsAndEnds = (listOf(start, end) + restOfStarts.flatMap {
+      it -> listOf(it - 1, it)
+    } + restOfEnds.flatMap {
+      it -> listOf(it, it + 1)
+    }).sorted()
+
+    val ranges = allStartsAndEnds.zipWithNext().filterIndexed { idx, _ -> idx % 2 == 0 }.map { it.first..it.second }
+
+    return ranges
+  }
+
   fun computeGrid(rebootSteps: List<RebootStep>): List<Cube> {
-    val xs = rebootSteps.flatMap { listOf(it.where.xs.first, it.where.xs.last) }.sorted().zipWithNext()
-    val ys = rebootSteps.flatMap { listOf(it.where.ys.first, it.where.ys.last) }.sorted().zipWithNext()
-    val zs = rebootSteps.flatMap { listOf(it.where.zs.first, it.where.zs.last) }.sorted().zipWithNext()
+    val xs = rebootSteps.flatMap { listOf(it.where.xs.first, it.where.xs.last) }.sorted().toSet().zipWithNext()
+    val ys = rebootSteps.flatMap { listOf(it.where.ys.first, it.where.ys.last) }.sorted().toSet().zipWithNext()
+    val zs = rebootSteps.flatMap { listOf(it.where.zs.first, it.where.zs.last) }.sorted().toSet().zipWithNext()
     return xs.flatMap { x ->
       ys.flatMap { y ->
         zs.map { z ->
@@ -148,7 +168,7 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
   }
 
   fun pointsBeingOnIn(continuousCube: Cube, rebootSteps: List<RebootStep>): Long =
-    if (isOn(continuousCube.leftBottom, rebootSteps))
+    if (isOn(continuousCube.middlePoint, rebootSteps))
       continuousCube.pointCount
     else
       0
