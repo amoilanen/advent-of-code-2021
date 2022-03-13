@@ -20,9 +20,23 @@ class Day22Spec {
     assertEquals(expected, actual)
   }
 
-  //TODO: Same range start and end
+  @Test
+  fun test_intersectRanges_3_same_start_end() {
+    val actual = intersectRanges(listOf(0..2, 0..4, 2..4))
+    val expected = listOf(0..1, 2..2, 3..4)
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun test_intersectRanges_4_non_intersecting_ranges() {
+    val actual = intersectRanges(listOf(0..1, 2..4, 5..8))
+    val expected = listOf(0..1, 2..4, 5..8)
+    assertEquals(expected, actual)
+  }
+
   //TODO: Same range start
   //TODO: Same range end
   //TODO: Same start and end occur several times in different ranges
+
   //TODO: Distinguish same start and end with different directions, i.e. [0, 3], [1, 2], [2, 3] vs [1, 1], [1, 1], [1, 1]
 }
