@@ -3,6 +3,7 @@ package io.github.antivanov.aoc2021
 import arrow.core.None
 import arrow.core.Some
 import arrow.core.toOption
+import io.github.antivanov.aoc2021.util.ListUtils.pairsOf
 
 object Day22 {
 
@@ -134,23 +135,32 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
     return countPointsBeingOn(Cube(cubeDimension, cubeDimension, cubeDimension), rebootSteps)
   }
 
-  //TODO: Implement correct algorithm for intersecting ranges
+  data class RangeBoundary(val value: Int, val type: RangeBoundaryType)
+
+  enum class RangeBoundaryType {
+    LEFT,
+    RIGHT;
+  }
+
   fun intersectRanges(ranges: List<IntRange>): List<IntRange> {
-    val starts = ranges.map { it.first }
-    val ends = ranges.map { it.last }
-    val start = starts.minOrNull()!!
-    val end = ends.maxOrNull()!!
-    val restOfStarts = starts.filter { it != start }
-    val restOfEnds = ends.filter { it != end }
+    val boundaries = ranges.flatMap {
+      listOf(
+        RangeBoundary(it.first, RangeBoundaryType.LEFT),
+        RangeBoundary(it.last, RangeBoundaryType.RIGHT)
+      )
+    }
 
-    val allStartsAndEnds = (listOf(start, end) + restOfStarts.flatMap {
-      it -> listOf(it - 1, it)
-    } + restOfEnds.flatMap {
-      it -> listOf(it, it + 1)
-    }).sorted()
+    val boundariesAfterIntersection = boundaries.flatMap { boundary ->
+      if (boundary.type == RangeBoundaryType.LEFT) {
+        listOf(RangeBoundary(boundary.value - 1, RangeBoundaryType.RIGHT), boundary)
+      } else {
+        listOf(boundary, RangeBoundary(boundary.value + 1, RangeBoundaryType.LEFT))
+      }
+    }.sortedBy { it.value }.drop(1).dropLast(1)
 
-    val ranges = allStartsAndEnds.zipWithNext().filterIndexed { idx, _ -> idx % 2 == 0 }.map { it.first..it.second }
-
+    val ranges = pairsOf(boundariesAfterIntersection.map { it.value }).map {
+      it.first..it.second
+    }
     return ranges
   }
 
@@ -185,8 +195,13 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 }
 
 fun main() {
+  /*
   val steps = Day22.parseInput(Day22.input)
   println(steps)
   println(Day22.part1(steps))
   println(Day22.part2(steps))
+  */
+  val values = 1..10
+
+  println(pairsOf(values.toList()))
 }
