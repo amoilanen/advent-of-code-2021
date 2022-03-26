@@ -4,6 +4,7 @@ import arrow.core.None
 import arrow.core.Some
 import arrow.core.toOption
 import io.github.antivanov.aoc2021.util.ListUtils.pairsOf
+import kotlin.math.sign
 
 object Day22 {
 
@@ -135,7 +136,26 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
     return countPointsBeingOn(Cube(cubeDimension, cubeDimension, cubeDimension), rebootSteps)
   }
 
-  data class RangeBoundary(val value: Int, val type: RangeBoundaryType)
+  data class RangeBoundary(val value: Int, val type: RangeBoundaryType) {
+    companion object {
+      object RangeBoundaryComparator: Comparator<RangeBoundary>{
+        private fun directionValue(a: RangeBoundary): Int =
+          if (a.type == RangeBoundaryType.LEFT)
+            -1
+          else
+            1
+
+        override fun compare(a: RangeBoundary?, b: RangeBoundary?): Int {
+          val valueDifference = a!!.value - b!!.value
+          val directionDifference = directionValue(a!!) - directionValue(b!!)
+          return if (valueDifference == 0)
+            directionDifference
+          else
+            valueDifference
+        }
+      }
+    }
+  }
 
   enum class RangeBoundaryType {
     LEFT,
@@ -148,7 +168,9 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
         RangeBoundary(it.first, RangeBoundaryType.LEFT),
         RangeBoundary(it.last, RangeBoundaryType.RIGHT)
       )
-    }
+    }.toSet().sortedWith(RangeBoundary.Companion.RangeBoundaryComparator)
+    println(boundaries)
+    println(boundaries.map { it.value })
 
     val boundariesAfterIntersection = boundaries.flatMap { boundary ->
       if (boundary.type == RangeBoundaryType.LEFT) {
@@ -156,9 +178,15 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
       } else {
         listOf(boundary, RangeBoundary(boundary.value + 1, RangeBoundaryType.LEFT))
       }
-    }.sortedBy { it.value }.drop(1).dropLast(1)
+    }.sortedBy { it.value }.toSet().map { it.value }
 
-    val ranges = pairsOf(boundariesAfterIntersection.map { it.value }).map {
+    println(boundariesAfterIntersection)
+
+    val boundariesFirstAndLastBoundariesDropped = boundariesAfterIntersection.drop(1).dropLast(1)
+
+    println(boundariesFirstAndLastBoundariesDropped)
+
+    val ranges = pairsOf(boundariesFirstAndLastBoundariesDropped).map {
       it.first..it.second
     }
     return ranges
