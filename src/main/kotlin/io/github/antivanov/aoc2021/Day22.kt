@@ -169,8 +169,8 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
         RangeBoundary(it.last, RangeBoundaryType.RIGHT)
       )
     }.toSet().sortedWith(RangeBoundary.Companion.RangeBoundaryComparator)
-    println(boundaries)
-    println(boundaries.map { it.value })
+    //println(boundaries)
+    //println(boundaries.map { it.value })
 
     val boundariesAfterIntersection = boundaries.flatMap { boundary ->
       if (boundary.type == RangeBoundaryType.LEFT) {
@@ -180,11 +180,11 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
       }
     }.sortedBy { it.value }.toSet().map { it.value }
 
-    println(boundariesAfterIntersection)
+    //println(boundariesAfterIntersection)
 
     val boundariesFirstAndLastBoundariesDropped = boundariesAfterIntersection.drop(1).dropLast(1)
 
-    println(boundariesFirstAndLastBoundariesDropped)
+    //println(boundariesFirstAndLastBoundariesDropped)
 
     val ranges = pairsOf(boundariesFirstAndLastBoundariesDropped).map {
       it.first..it.second
@@ -193,13 +193,13 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
   }
 
   fun computeGrid(rebootSteps: List<RebootStep>): List<Cube> {
-    val xs = rebootSteps.flatMap { listOf(it.where.xs.first, it.where.xs.last) }.sorted().toSet().zipWithNext()
-    val ys = rebootSteps.flatMap { listOf(it.where.ys.first, it.where.ys.last) }.sorted().toSet().zipWithNext()
-    val zs = rebootSteps.flatMap { listOf(it.where.zs.first, it.where.zs.last) }.sorted().toSet().zipWithNext()
+    val xs = intersectRanges(rebootSteps.map { it.where.xs })
+    val ys = intersectRanges(rebootSteps.map { it.where.ys })
+    val zs = intersectRanges(rebootSteps.map { it.where.zs })
     return xs.flatMap { x ->
       ys.flatMap { y ->
         zs.map { z ->
-          Cube(x.first..x.second, y.first..y.second, z.first..z.second)
+          Cube(x, y, z)
         }
       }
     }
@@ -223,13 +223,8 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 }
 
 fun main() {
-  /*
   val steps = Day22.parseInput(Day22.input)
   println(steps)
   println(Day22.part1(steps))
   println(Day22.part2(steps))
-  */
-  val values = 1..10
-
-  println(pairsOf(values.toList()))
 }
