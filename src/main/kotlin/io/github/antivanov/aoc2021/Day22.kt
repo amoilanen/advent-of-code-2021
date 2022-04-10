@@ -50,20 +50,6 @@ on x=967..23432,y=45373..81175,z=27513..53682
   data class Cube(val xs: IntRange, val ys: IntRange, val zs: IntRange) {
     val middlePoint: Point = Point((xs.first + xs.last) / 2, (ys.first + ys.last) / 2, (zs.first + zs.last) / 2)
     val pointCount: Long = (xs.last - xs.first + 1).toLong() * (ys.last - ys.first + 1) * (zs.last - zs.first + 1)
-    fun hasPoint(point: Point): Boolean =
-      (point.x in xs) && (point.y in ys) && (point.z in zs)
-    fun commonPointCountWith(other: Cube): Long =
-      xs.fold(0) { xCount, x ->
-        ys.fold(xCount) { yCount, y ->
-          zs.fold(yCount) { zCount, z ->
-            val currentPoint = Point(x, y, z)
-            if (other.hasPoint(currentPoint))
-              zCount + 1
-            else
-              zCount
-          }
-        }
-      }
   }
 
   data class RebootStep(val action: StepAction, val where: Cube) {
@@ -82,11 +68,11 @@ on x=967..23432,y=45373..81175,z=27513..53682
       }
       RebootStep(action, Cube(xs, ys, zs))
     }
-    return steps.reversed()
+    return steps
   }
 
   private fun isOn(point: Point, rebootSteps: List<RebootStep>): Boolean {
-    val lastStep = rebootSteps.find { it.isAffecting(point) }.toOption()
+    val lastStep = rebootSteps.findLast { it.isAffecting(point) }.toOption()
     return when (lastStep) {
       is Some -> lastStep.value.action == StepAction.ON
       is None -> false
