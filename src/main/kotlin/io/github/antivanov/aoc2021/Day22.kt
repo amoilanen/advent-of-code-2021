@@ -216,9 +216,22 @@ off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
       acc + pointsBeingOnIn(cube, rebootSteps)
     }
 
+  //TODO: Is there some rounding error happening so that the number is too low? Should Long be used?
   fun part2(rebootSteps: List<RebootStep>): Long {
-    val grid = computeGrid(rebootSteps)
-    return countPointsBeingOnInGrid(grid, rebootSteps)
+    val xs = intersectRanges(rebootSteps.map { it.where.xs })
+    val ys = intersectRanges(rebootSteps.map { it.where.ys })
+    val zs = intersectRanges(rebootSteps.map { it.where.zs })
+    return xs.fold(0) { accX, x ->
+      ys.fold(accX) { accY, y ->
+        zs.fold(accY) { accZ, z ->
+          val cube = Cube(x, y, z)
+          if (isOn(cube.middlePoint, rebootSteps))
+            accZ + cube.pointCount
+          else
+            accZ
+        }
+      }
+    }
   }
 }
 
