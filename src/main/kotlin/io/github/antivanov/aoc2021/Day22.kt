@@ -115,7 +115,7 @@ on x=967..23432,y=45373..81175,z=27513..53682
       }
     }
 
-  fun intersectRanges(ranges: List<IntRange>): List<IntRange> {
+  fun sequentialRangesFrom(ranges: List<IntRange>): List<IntRange> {
     val boundaries = ranges.flatMap {
       listOf(
         RangeBoundary(it.first, RangeBoundaryType.LEFT),
@@ -141,9 +141,9 @@ on x=967..23432,y=45373..81175,z=27513..53682
       is Some ->
         countPointsBeingOnInCubeAfterSteps(withinCube.value, rebootSteps)
       is None -> {
-        val xs = intersectRanges(rebootSteps.map { it.where.xs })
-        val ys = intersectRanges(rebootSteps.map { it.where.ys })
-        val zs = intersectRanges(rebootSteps.map { it.where.zs })
+        val xs = sequentialRangesFrom(rebootSteps.map { it.where.xs })
+        val ys = sequentialRangesFrom(rebootSteps.map { it.where.ys })
+        val zs = sequentialRangesFrom(rebootSteps.map { it.where.zs })
         xs.fold(0) { accX, x ->
           ys.fold(accX) { accY, y ->
             zs.fold(accY) { accZ, z ->
