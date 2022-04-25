@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.github.antivanov.aoc2021.Day22.sequentialRangesFrom
 import io.github.antivanov.aoc2021.Day22.Segment
+import io.github.antivanov.aoc2021.Day22.Cube
 
 class Day22Spec {
 
@@ -89,5 +90,20 @@ class Day22Spec {
     val s1 = Segment(1..4)
     val s2 = Segment(6..8)
     assertEquals(Segment(IntRange.EMPTY), s1.intersectWith(s2))
+  }
+
+  @Test
+  fun test_intersect_cubes_non_empty_intersection() {
+    val cube1 = Cube(2..4, 6..8, 10..12)
+    val cube2 = Cube(3..5, 7..9, 11..13)
+    val expected = Cube(3..4, 7..8, 11..12)
+    assertEquals(expected, cube1.intersectWith(cube2))
+  }
+
+  @Test
+  fun test_intersect_cubes_empty_intersection() {
+    val cube1 = Cube(2..4, 6..8, 10..12)
+    val cube2 = Cube(5..7, 9..11, 13..15)
+    assertEquals(Cube.EMPTY, cube1.intersectWith(cube2))
   }
 }

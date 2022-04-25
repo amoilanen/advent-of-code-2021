@@ -61,9 +61,15 @@ on x=967..23432,y=45373..81175,z=27513..53682
     val middlePoint: Point = Point((xs.first + xs.last) / 2, (ys.first + ys.last) / 2, (zs.first + zs.last) / 2)
     val pointCount: Long = (xs.last - xs.first + 1).toLong() * (ys.last - ys.first + 1) * (zs.last - zs.first + 1)
 
-    fun intersectWith(cube: Cube): Cube {
-      //TODO: Implement
-      return this
+    fun intersectWith(other: Cube): Cube {
+      val intersectionXs = Segment(xs).intersectWith(Segment(other.xs)).values
+      val intersectionYs = Segment(ys).intersectWith(Segment(other.ys)).values
+      val intersectionZs = Segment(zs).intersectWith(Segment(other.zs)).values
+      return Cube(intersectionXs, intersectionYs, intersectionZs)
+    }
+
+    companion object {
+      val EMPTY = Cube(IntRange.EMPTY, IntRange.EMPTY, IntRange.EMPTY)
     }
   }
 
