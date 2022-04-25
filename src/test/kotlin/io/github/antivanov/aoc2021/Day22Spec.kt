@@ -3,6 +3,7 @@ package io.github.antivanov.aoc2021
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.github.antivanov.aoc2021.Day22.sequentialRangesFrom
+import io.github.antivanov.aoc2021.Day22.Segment
 
 class Day22Spec {
 
@@ -74,5 +75,19 @@ class Day22Spec {
     val actual = sequentialRangesFrom(listOf(0..2, 5..7, 9..10))
     val expected = listOf(0..2, 3..4, 5..7, 8..8, 9..10)
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun test_intersect_segments_non_empty_intersection() {
+    val s1 = Segment(1..8)
+    val s2 = Segment(0..5)
+    assertEquals(Segment(1..5), s1.intersectWith(s2))
+  }
+
+  @Test
+  fun test_intersect_segments_empty_intersection() {
+    val s1 = Segment(1..4)
+    val s2 = Segment(6..8)
+    assertEquals(Segment(IntRange.EMPTY), s1.intersectWith(s2))
   }
 }
