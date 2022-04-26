@@ -1,7 +1,6 @@
 package io.github.antivanov.aoc2021
 
 import arrow.core.None
-import arrow.core.Option
 import arrow.core.Some
 import arrow.core.toOption
 import io.github.antivanov.aoc2021.util.ListUtils.pairsOf
@@ -67,10 +66,6 @@ on x=967..23432,y=45373..81175,z=27513..53682
       val intersectionZs = Segment(zs).intersectWith(Segment(other.zs)).values
       return Cube(intersectionXs, intersectionYs, intersectionZs)
     }
-
-    companion object {
-      val EMPTY = Cube(IntRange.EMPTY, IntRange.EMPTY, IntRange.EMPTY)
-    }
   }
 
   data class RebootStep(val action: StepAction, val where: Cube) {
@@ -92,7 +87,7 @@ on x=967..23432,y=45373..81175,z=27513..53682
     return steps
   }
 
-  private fun isOn(point: Point, rebootSteps: List<RebootStep>): Boolean {
+  private fun isOnAfterSteps(point: Point, rebootSteps: List<RebootStep>): Boolean {
     val lastStep = rebootSteps.findLast { it.isAffecting(point) }.toOption()
     return when (lastStep) {
       is Some -> lastStep.value.action == StepAction.ON
@@ -102,7 +97,7 @@ on x=967..23432,y=45373..81175,z=27513..53682
 
   data class RangeBoundary(val value: Int, val type: RangeBoundaryType) {
     companion object {
-      object RangeBoundaryComparator: Comparator<RangeBoundary>{
+      object RangeBoundaryComparator: Comparator<RangeBoundary> {
         private fun directionValue(a: RangeBoundary): Int =
           if (a.type == RangeBoundaryType.LEFT)
             -1
@@ -123,19 +118,6 @@ on x=967..23432,y=45373..81175,z=27513..53682
     RIGHT;
   }
 
-  fun countPointsBeingOnInCubeAfterSteps(points: Cube, rebootSteps: List<RebootStep>): Long =
-    points.xs.fold(0) { xCount, x ->
-      points.ys.fold(xCount) { yCount, y ->
-        points.zs.fold(yCount) { zCount, z ->
-          val currentPoint = Point(x, y, z)
-          if (isOn(currentPoint, rebootSteps))
-            zCount + 1
-          else
-            zCount
-        }
-      }
-    }
-
   fun sequentialRangesFrom(ranges: List<IntRange>): List<IntRange> {
     val boundaries = ranges.flatMap {
       listOf(
@@ -151,42 +133,37 @@ on x=967..23432,y=45373..81175,z=27513..53682
       }
     }.sortedBy { it.value }.toSet().map { it.value }
     val boundariesFirstAndLastBoundariesDropped = boundariesAfterIntersection.drop(1).dropLast(1)
-    val ranges = pairsOf(boundariesFirstAndLastBoundariesDropped).map {
+    return pairsOf(boundariesFirstAndLastBoundariesDropped).map {
       it.first..it.second
     }
-    return ranges
   }
 
-  fun countPointsBeingOnAfterSteps(rebootSteps: List<RebootStep>, withinCube: Option<Cube>): Long =
-    when (withinCube) {
-      is Some ->
-        countPointsBeingOnInCubeAfterSteps(withinCube.value, rebootSteps)
-      is None -> {
-        val xs = sequentialRangesFrom(rebootSteps.map { it.where.xs })
-        val ys = sequentialRangesFrom(rebootSteps.map { it.where.ys })
-        val zs = sequentialRangesFrom(rebootSteps.map { it.where.zs })
-        xs.fold(0) { accX, x ->
-          ys.fold(accX) { accY, y ->
-            zs.fold(accY) { accZ, z ->
-              val cube = Cube(x, y, z)
-              if (isOn(cube.middlePoint, rebootSteps))
-                accZ + cube.pointCount
-              else
-                accZ
-            }
-          }
+  private fun countPointsBeingOnAfterSteps(rebootSteps: List<RebootStep>): Long {
+    val xs = sequentialRangesFrom(rebootSteps.map { it.where.xs })
+    val ys = sequentialRangesFrom(rebootSteps.map { it.where.ys })
+    val zs = sequentialRangesFrom(rebootSteps.map { it.where.zs })
+    return xs.fold(0) { accX, x ->
+      ys.fold(accX) { accY, y ->
+        zs.fold(accY) { accZ, z ->
+          val cube = Cube(x, y, z)
+          if (isOnAfterSteps(cube.middlePoint, rebootSteps))
+            accZ + cube.pointCount
+          else
+            accZ
         }
       }
     }
+  }
 
   fun part1(rebootSteps: List<RebootStep>): Long {
     val coordinateRange = -50..50
     val boundingCube = Cube(coordinateRange, coordinateRange, coordinateRange)
-    return countPointsBeingOnAfterSteps(rebootSteps, Some(boundingCube))
+    val boundedRebootSteps = rebootSteps.map { step -> step.copy(where = step.where.intersectWith(boundingCube)) }
+    return countPointsBeingOnAfterSteps(boundedRebootSteps)
   }
 
   fun part2(rebootSteps: List<RebootStep>): Long {
-    return countPointsBeingOnAfterSteps(rebootSteps, None)
+    return countPointsBeingOnAfterSteps(rebootSteps)
   }
 }
 

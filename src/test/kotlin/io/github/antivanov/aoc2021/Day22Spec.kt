@@ -104,6 +104,6 @@ class Day22Spec {
   fun test_intersect_cubes_empty_intersection() {
     val cube1 = Cube(2..4, 6..8, 10..12)
     val cube2 = Cube(5..7, 9..11, 13..15)
-    assertEquals(Cube.EMPTY, cube1.intersectWith(cube2))
+    assertEquals(Cube(IntRange.EMPTY, IntRange.EMPTY, IntRange.EMPTY), cube1.intersectWith(cube2))
   }
 }
